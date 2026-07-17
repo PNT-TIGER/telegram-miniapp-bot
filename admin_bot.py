@@ -7,7 +7,7 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Mess
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-TOKEN = "8867263661:AAFVGrC_GN-IUNOzaXCBUHMo9JiKyXTw53Q"
+TOKEN = "8842832456:AAFVm0aMhBj0ujEpzml5UUcd5IHVMvOhHF4"
 ADMIN_ID = 7797816241
 DATA_FILE = "posts.json"
 BOT_USERNAME = None

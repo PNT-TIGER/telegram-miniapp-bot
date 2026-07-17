@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 DATA_FILE = "posts.json"
 UPLOAD_DIR = "uploads"
-TOKEN = "8992436164:AAGRoWbsfsw54LL4vBnt7wOaPXtHUmuYg0Y"
+TOKEN = "8842832456:AAFVm0aMhBj0ujEpzml5UUcd5IHVMvOhHF4"
 ADMIN_PASS = "admin"
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
