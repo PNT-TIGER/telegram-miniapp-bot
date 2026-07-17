@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Video Hub</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root {
+  --bg: var(--tg-theme-bg-color, #fff);
+  --text: var(--tg-theme-text-color, #000);
+  --hint: var(--tg-theme-hint-color, #999);
+  --link: var(--tg-theme-link-color, #2481cc);
+  --btn: var(--tg-theme-button-color, #2481cc);
+  --btn-text: var(--tg-theme-button-text-color, #fff);
+  --secondary: var(--tg-theme-secondary-bg-color, #f0f0f0);
+  --section: var(--tg-theme-section-bg-color, #fff);
+  --card-radius: 12px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background:var(--bg);color:var(--text);padding-bottom:70px;
+  min-height:100vh;
+}
+.page{display:none;padding:12px 12px 80px}
+.page.active{display:block}
+
+/* Bottom Nav */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--bg);border-top:1px solid var(--hint);
+  display:flex;justify-content:space-around;padding:8px 0 12px;
+  z-index:100;
+}
+.nav-item{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  background:none;border:none;color:var(--hint);font-size:10px;cursor:pointer;padding:4px 16px;
+}
+.nav-item.active{color:var(--btn)}
+.nav-item svg{width:24px;height:24px;fill:currentColor}
+
+/* Post Card */
+.post-card{
+  background:var(--section);border-radius:var(--card-radius);overflow:hidden;
+  margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,0.08);
+}
+.post-photo{
+  width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:var(--secondary);
+}
+.post-body{padding:12px 14px 16px}
+.post-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.post-date{font-size:11px;color:var(--hint)}
+.views-badge{font-size:11px;color:var(--hint);display:flex;align-items:center;gap:4px}
+
+/* Task Section */
+.task-section{
+  background:var(--secondary);border-radius:8px;padding:12px;margin-bottom:10px;text-align:center;
+}
+.task-title{font-size:13px;font-weight:600;margin-bottom:8px;color:var(--btn)}
+.task-progress{font-size:12px;color:var(--hint);margin-bottom:8px}
+.task-btn{
+  background:var(--btn);color:var(--btn-text);border:none;border-radius:8px;
+  padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;width:100%;max-width:200px;
+}
+.task-btn:disabled{opacity:0.5;cursor:default}
+.task-btn.open-link{background:#2e7d32}
+.task-status{font-size:12px;margin-top:6px;min-height:18px}
+
+/* Action Row */
+.post-actions{display:flex;gap:8px;justify-content:center}
+.action-btn{
+  background:var(--secondary);color:var(--text);border:1px solid var(--hint);
+  border-radius:8px;padding:8px 16px;font-size:12px;cursor:pointer;flex:1;text-align:center;
+}
+.action-btn.copy{background:var(--btn);color:var(--btn-text);border-color:var(--btn)}
+
+/* Albums Grid */
+.albums-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.albums-grid img{width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer;border-radius:4px}
+
+/* Profile */
+.profile-header{text-align:center;padding:24px 0}
+.profile-photo{width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:8px;background:var(--secondary)}
+.profile-name{font-size:18px;font-weight:700}
+.profile-id{font-size:12px;color:var(--hint);margin-top:2px}
+.profile-btn{
+  display:block;width:100%;max-width:280px;margin:16px auto;
+  background:var(--btn);color:var(--btn-text);border:none;border-radius:8px;
+  padding:12px;font-size:15px;font-weight:600;cursor:pointer;text-align:center;text-decoration:none;
+}
+.profile-section{background:var(--secondary);border-radius:8px;padding:16px;margin:12px}
+.profile-section h3{font-size:14px;color:var(--hint);margin-bottom:8px}
+.stat-row{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}
+
+/* Empty State */
+.empty-state{text-align:center;padding:60px 20px;color:var(--hint)}
+.empty-state svg{width:48px;height:48px;fill:var(--hint);margin-bottom:12px}
+.empty-state p{font-size:14px}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+  background:var(--text);color:var(--bg);padding:10px 20px;border-radius:8px;
+  font-size:13px;z-index:200;display:none;white-space:nowrap;
+}
+</style>
+</head>
+<body>
+
+<div id="page-home" class="page active"></div>
+<div id="page-albums" class="page"></div>
+<div id="page-profile" class="page"></div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" data-page="home">
+    <svg viewBox="0 0 24 24"><path d="M12 3L4 9v12h5v-7h6v7h5V9z"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="nav-item" data-page="albums">
+    <svg viewBox="0 0 24 24"><path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"/></svg>
+    <span>Albums</span>
+  </button>
+  <button class="nav-item" data-page="profile">
+    <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+    <span>Profile</span>
+  </button>
+</nav>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const API = "https://c608d31e3c7c6fe9-103-126-20-86.serveousercontent.com";
+let tg = window.Telegram ? Telegram.WebApp : null;
+if (tg) tg.expand();
+
+let tgUser = null;
+if (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+  tgUser = tg.initDataUnsafe.user;
+}
+
+let posts = [];
+
+// Navigation
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + btn.dataset.page).classList.add('active');
+    if (btn.dataset.page === 'home') renderHome();
+    if (btn.dataset.page === 'albums') renderAlbums();
+    if (btn.dataset.page === 'profile') renderProfile();
+  });
+});
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 2000);
+}
+
+async function fetchAPI(path, opts = {}) {
+  try {
+    const r = await fetch(API + path, {
+      headers: {'Content-Type': 'application/json'},
+      ...opts
+    });
+    return await r.json();
+  } catch(e) { return null; }
+}
+
+async function loadPosts() {
+  posts = await fetchAPI('/api/posts') || [];
+  return posts;
+}
+
+// ====== HOME ======
+async function renderHome() {
+  await loadPosts();
+  const container = document.getElementById('page-home');
+  if (!posts.length) {
+    container.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+      <p>No posts yet</p>
+    </div>`;
+    return;
+  }
+  let html = '';
+  for (const p of posts) {
+    let status = {completed: false, remaining: p.click_required, total: p.click_required};
+    if (tgUser) {
+      const s = await fetchAPI(`/api/user/${tgUser.id}/click_status/${p.id}`);
+      if (s) status = s;
+    }
+    html += postCard(p, status);
+  }
+  container.innerHTML = html;
+
+  // Attach event listeners
+  document.querySelectorAll('.task-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const postId = btn.dataset.post;
+      const required = parseInt(btn.dataset.required);
+      if (btn.dataset.unlocked === 'true') {
+        const post = posts.find(x => x.id === postId);
+        if (post && post.link) window.open(post.link, '_blank');
+        return;
+      }
+      if (!tgUser) { toast('Open from Telegram'); return; }
+      const res = await fetchAPI(`/api/task/${postId}/click`, {
+        method: 'POST', body: JSON.stringify({user_id: tgUser.id})
+      });
+      if (!res) return;
+      const remaining = res.remaining;
+      const statusEl = btn.parentElement.querySelector('.task-status');
+      const progressEl = btn.parentElement.querySelector('.task-progress');
+      if (res.completed) {
+        statusEl.textContent = '✅ All tasks completed!';
+        btn.textContent = '▶ Open Video';
+        btn.dataset.unlocked = 'true';
+        btn.classList.add('open-link');
+        progressEl.textContent = '0 more to go';
+      } else {
+        statusEl.textContent = '✅ Task Complete';
+        progressEl.textContent = `${remaining} more to go`;
+      }
+    });
+  });
+
+  document.querySelectorAll('.copy-link').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const postId = btn.dataset.post;
+      const link = `${window.location.origin}/?post=${postId}`;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(link).then(() => toast('Link copied!'));
+      } else {
+        toast('Copy: ' + link);
+      }
+    });
+  });
+
+  // Check if opened via post link
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('post')) {
+    setTimeout(() => scrollToPost(params.get('post')), 500);
+  }
+}
+
+function scrollToPost(id) {
+  const el = document.getElementById('post-' + id);
+  if (el) el.scrollIntoView({behavior: 'smooth', block: 'center'});
+}
+
+function postCard(p, status) {
+  const remaining = status.remaining;
+  const completed = status.completed;
+  return `<div class="post-card" id="post-${p.id}">
+    <img class="post-photo" src="${p.photo}" alt="post" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22170%22><rect fill=%22%23ddd%22 width=%22300%22 height=%22170%22/></svg>'">
+    <div class="post-body">
+      <div class="post-header">
+        <span class="post-date">${p.date || ''}</span>
+        <span class="views-badge">👁 ${p.views || 0}</span>
+      </div>
+      <div class="task-section">
+        <div class="task-title">📢 ADS Unlock Access (${remaining} Left)</div>
+        <div class="task-progress">${completed ? '0 more to go' : (remaining + ' more to go')}</div>
+        <button class="task-btn${completed ? ' open-link' : ''}" data-post="${p.id}" data-required="${p.click_required}" data-unlocked="${completed}">
+          ${completed ? '▶ Open Video' : '▶ Start Task'}
+        </button>
+        <div class="task-status">${completed ? '✅ All tasks completed!' : ''}</div>
+      </div>
+      <div class="post-actions">
+        <button class="action-btn copy-link" data-post="${p.id}">📋 Copy Link</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ====== ALBUMS ======
+async function renderAlbums() {
+  await loadPosts();
+  const container = document.getElementById('page-albums');
+  if (!posts.length) {
+    container.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24"><path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"/></svg>
+      <p>No photos yet</p>
+    </div>`;
+    return;
+  }
+  let html = '<h2 style="font-size:18px;margin-bottom:12px">📷 All Photos</h2><div class="albums-grid">';
+  for (const p of posts) {
+    html += `<img src="${p.photo}" alt="" loading="lazy" onclick="goHome('${p.id}')">`;
+  }
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function goHome(postId) {
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.querySelector('[data-page="home"]').classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-home').classList.add('active');
+  setTimeout(() => scrollToPost(postId), 300);
+}
+
+// ====== PROFILE ======
+async function renderProfile() {
+  const container = document.getElementById('page-profile');
+  let photo = '', name = 'User', tgid = 'N/A';
+  if (tgUser) {
+    name = tgUser.first_name || '';
+    if (tgUser.last_name) name += ' ' + tgUser.last_name;
+    tgid = tgUser.id;
+    if (tgUser.photo_url) photo = tgUser.photo_url;
+  }
+  const config = await fetchAPI('/api/config') || {};
+  const chanLink = config.channel_link || '';
+
+  let totalViews = 0, totalPosts = posts.length;
+  for (const p of posts) totalViews += p.views || 0;
+
+  container.innerHTML = `
+    <div class="profile-header">
+      ${photo ? `<img class="profile-photo" src="${photo}" alt="">` : `<div class="profile-photo" style="background:var(--btn);display:inline-flex;align-items:center;justify-content:center;font-size:32px;color:var(--btn-text)">👤</div>`}
+      <div class="profile-name">${name}</div>
+      <div class="profile-id">ID: ${tgid}</div>
+    </div>
+    <div class="profile-section">
+      <h3>📊 Statistics</h3>
+      <div class="stat-row"><span>Total Posts</span><span>${totalPosts}</span></div>
+      <div class="stat-row"><span>Total Views</span><span>${totalViews}</span></div>
+    </div>
+    <div class="profile-section">
+      <h3>🔗 Quick Links</h3>
+      ${chanLink ? `<a href="${chanLink}" target="_blank" class="profile-btn">📢 Join Channel</a>` : '<p style="color:var(--hint);font-size:13px">No channel link set</p>'}
+    </div>
+  `;
+}
+
+// Init
+loadPosts().then(() => {
+  renderHome();
+  renderAlbums();
+  renderProfile();
+});
+</script>
+</body>
+</html>
