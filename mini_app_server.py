@@ -1,4 +1,4 @@
-import json, os, logging, uuid, threading
+import json, os, logging, uuid
 from datetime import datetime
 from flask import Flask, request, jsonify, send_from_directory
 import requests as http_requests
@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 DATA_FILE = "posts.json"
 UPLOAD_DIR = "uploads"
 TOKEN = "8992436164:AAGRoWbsfsw54LL4vBnt7wOaPXtHUmuYg0Y"
+ADMIN_PASS = "admin"
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -25,26 +26,82 @@ def save_data(data):
     with open(DATA_FILE, "w") as f:
         json.dump(data, f, indent=2)
 
-def download_telegram_file(file_id, filename):
-    r = http_requests.get(f"https://api.telegram.org/bot{TOKEN}/getFile?file_id={file_id}")
-    if r.status_code != 200:
-        return None
-    path = r.json()["result"]["file_path"]
-    dl = http_requests.get(f"https://api.telegram.org/file/bot{TOKEN}/{path}")
-    if dl.status_code != 200:
-        return None
-    filepath = os.path.join(UPLOAD_DIR, filename)
-    with open(filepath, "wb") as f:
-        f.write(dl.content)
-    return filename
+def check_admin():
+    auth = request.headers.get("Authorization", "")
+    return auth == f"Bearer {ADMIN_PASS}"
 
 @app.route("/")
 def index():
     return send_from_directory("templates", "mini_app.html")
 
+@app.route("/admin")
+def admin_page():
+    return send_from_directory("templates", "admin.html")
+
 @app.route("/uploads/<name>")
 def uploaded_file(name):
     return send_from_directory(UPLOAD_DIR, name)
+
+@app.route("/api/admin/check", methods=["POST"])
+def admin_check():
+    pwd = request.json.get("password", "")
+    return jsonify({"ok": pwd == ADMIN_PASS})
+
+@app.route("/api/admin/upload", methods=["POST"])
+def admin_upload():
+    if not check_admin():
+        return jsonify({"error": "unauthorized"}), 401
+    data = load_data()
+    link = request.form.get("link", "")
+    file = request.files.get("photo")
+
+    if not file or not link:
+        return jsonify({"error": "photo and link required"}), 400
+
+    fname = f"{uuid.uuid4().hex[:8]}.jpg"
+    filepath = os.path.join(UPLOAD_DIR, fname)
+    file.save(filepath)
+
+    post = {
+        "id": uuid.uuid4().hex[:8],
+        "photo": fname,
+        "link": link,
+        "views": 0,
+        "viewers": [],
+        "clicks": {},
+        "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+    }
+    data["posts"].insert(0, post)
+    save_data(data)
+    return jsonify({"ok": True, "id": post["id"], "photo": f"/uploads/{fname}"})
+
+@app.route("/api/admin/post/<post_id>", methods=["DELETE"])
+def admin_delete_post(post_id):
+    if not check_admin():
+        return jsonify({"error": "unauthorized"}), 401
+    data = load_data()
+    idx = None
+    for i, p in enumerate(data["posts"]):
+        if p["id"] == post_id:
+            idx = i
+            break
+    if idx is None:
+        return jsonify({"error": "not found"}), 404
+    removed = data["posts"].pop(idx)
+    save_data(data)
+    if removed.get("photo"):
+        try: os.remove(os.path.join(UPLOAD_DIR, removed["photo"]))
+        except: pass
+    return jsonify({"ok": True})
+
+@app.route("/api/admin/config", methods=["POST"])
+def admin_set_config():
+    if not check_admin():
+        return jsonify({"error": "unauthorized"}), 401
+    data = load_data()
+    data["config"] = request.json
+    save_data(data)
+    return jsonify({"ok": True})
 
 @app.route("/api/posts")
 def get_posts():
@@ -54,7 +111,6 @@ def get_posts():
         posts.append({
             "id": p["id"],
             "photo": f"/uploads/{p['photo']}" if p.get("photo") else None,
-            "click_required": p.get("click_required", 5),
             "views": p.get("views", 0),
             "date": p.get("date", ""),
             "link": p.get("link", ""),
@@ -70,7 +126,6 @@ def get_post(post_id):
                 "id": p["id"],
                 "photo": f"/uploads/{p['photo']}" if p.get("photo") else None,
                 "link": p.get("link", ""),
-                "click_required": p.get("click_required", 5),
                 "views": p.get("views", 0),
                 "date": p.get("date", ""),
             })
@@ -82,7 +137,6 @@ def view_post(post_id):
     user_id = request.json.get("user_id", "unknown")
     for p in data["posts"]:
         if p["id"] == post_id:
-            p["views"] = p.get("views", 0) + 1
             viewers = p.setdefault("viewers", [])
             if user_id not in viewers:
                 viewers.append(user_id)
@@ -91,73 +145,10 @@ def view_post(post_id):
             return jsonify({"views": p["views"]})
     return jsonify({"error": "not found"}), 404
 
-@app.route("/api/task/<post_id>/click", methods=["POST"])
-def task_click(post_id):
-    data = load_data()
-    user_id = str(request.json.get("user_id", "unknown"))
-    for p in data["posts"]:
-        if p["id"] == post_id:
-            clicks = p.setdefault("clicks", {})
-            current = clicks.get(user_id, 0)
-            required = p.get("click_required", 5)
-            if current >= required:
-                return jsonify({"done": True, "completed": True, "remaining": 0})
-            current += 1
-            clicks[user_id] = current
-            save_data(data)
-            remaining = required - current
-            return jsonify({
-                "done": current >= required,
-                "completed": current >= required,
-                "remaining": remaining,
-                "total": required
-            })
-    return jsonify({"error": "not found"}), 404
-
-@app.route("/api/user/<user_id>/click_status/<post_id>")
-def click_status(user_id, post_id):
-    data = load_data()
-    for p in data["posts"]:
-        if p["id"] == post_id:
-            clicks = p.get("clicks", {})
-            current = clicks.get(user_id, 0)
-            required = p.get("click_required", 5)
-            return jsonify({
-                "completed": current >= required,
-                "remaining": required - current,
-                "total": required
-            })
-    return jsonify({"error": "not found"}), 404
-
 @app.route("/api/config")
 def get_config():
     data = load_data()
     return jsonify(data.get("config", {}))
-
-@app.route("/api/config", methods=["POST"])
-def set_config():
-    data = load_data()
-    data["config"] = request.json
-    save_data(data)
-    return jsonify({"ok": True})
-
-@app.route("/api/posts", methods=["POST"])
-def create_post():
-    data = load_data()
-    body = request.json
-    post = {
-        "id": str(uuid.uuid4())[:8],
-        "photo": body.get("photo", ""),
-        "link": body.get("link", ""),
-        "click_required": body.get("click_required", 5),
-        "views": 0,
-        "viewers": [],
-        "clicks": {},
-        "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
-    }
-    data["posts"].insert(0, post)
-    save_data(data)
-    return jsonify({"ok": True, "id": post["id"]})
 
 def run_flask():
     app.run(host="0.0.0.0", port=5000, debug=False, use_reloader=False)
