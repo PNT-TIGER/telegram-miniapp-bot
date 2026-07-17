@@ -408,7 +408,8 @@ async function renderHome(){
   document.querySelectorAll('.copy-link').forEach(btn => {
     btn.addEventListener('click', () => {
       const postId = btn.dataset.post;
-      const link = window.location.origin + '/?post=' + postId;
+      const base = window.location.href.split('?')[0].replace(/\/$/,'');
+      const link = base + '/?post=' + postId;
       if(navigator.clipboard){
         navigator.clipboard.writeText(link).then(() => { toast('📋 Link copied!'); confetti(); });
       } else { toast('📋 ' + link); }
