@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Inter',sans-serif;background:#0a0e1a;color:#fff;
+  min-height:100vh;padding:20px;
+}
+.container{max-width:600px;margin:0 auto}
+
+/* Login */
+.login-box{
+  background:linear-gradient(135deg,#1a2240,#0f1729);
+  border:1px solid rgba(108,92,231,0.3);border-radius:16px;
+  padding:40px 24px;text-align:center;margin-top:80px;
+}
+.login-box h1{font-size:24px;font-weight:800;margin-bottom:6px}
+.login-box p{color:#6c7293;font-size:13px;margin-bottom:20px}
+.login-box input{
+  width:100%;padding:14px 16px;border-radius:10px;
+  background:#121829;border:1px solid rgba(108,92,231,0.3);
+  color:#fff;font-size:15px;outline:none;margin-bottom:12px;
+}
+.login-box input:focus{border-color:#6c5ce7}
+.login-btn{
+  width:100%;padding:14px;border:none;border-radius:10px;
+  background:linear-gradient(135deg,#6c5ce7,#4834d4);
+  color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.3s;
+}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(108,92,231,0.4)}
+
+/* Admin Panel */
+.admin-header{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;
+}
+.admin-header h1{font-size:22px;font-weight:800}
+.admin-header h1 span{color:#6c5ce7}
+.logout-btn{
+  background:rgba(253,121,168,0.2);color:#fd79a8;border:1px solid rgba(253,121,168,0.3);
+  padding:8px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;
+}
+.card{
+  background:linear-gradient(135deg,#1a2240,#0f1729);
+  border:1px solid rgba(108,92,231,0.15);border-radius:14px;
+  padding:20px;margin-bottom:16px;
+}
+.card h2{font-size:15px;font-weight:700;margin-bottom:14px;color:#b0b8d1;text-transform:uppercase;letter-spacing:0.5px}
+
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:12px;color:#6c7293;margin-bottom:5px;font-weight:600}
+.form-group input,.form-group textarea{
+  width:100%;padding:12px 14px;border-radius:10px;
+  background:#121829;border:1px solid rgba(108,92,231,0.2);
+  color:#fff;font-size:14px;outline:none;
+}
+.form-group input:focus,.form-group textarea:focus{border-color:#6c5ce7}
+.form-group input[type=file]{padding:10px}
+.form-group textarea{resize:vertical;min-height:50px;font-family:inherit}
+
+.upload-btn{
+  width:100%;padding:14px;border:none;border-radius:10px;
+  background:linear-gradient(135deg,#6c5ce7,#4834d4);
+  color:#fff;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.3s;
+}
+.upload-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(108,92,231,0.4)}
+.upload-btn:disabled{opacity:0.5;cursor:not-allowed}
+
+/* Posts List */
+.post-item{
+  display:flex;gap:12px;padding:12px 0;border-bottom:1px solid rgba(108,92,231,0.1);
+  align-items:center;
+}
+.post-item:last-child{border-bottom:none}
+.post-thumb{
+  width:60px;height:40px;border-radius:6px;object-fit:cover;background:#121829;flex-shrink:0;
+}
+.post-info{flex:1;min-width:0}
+.post-info .pi-title{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.post-info .pi-meta{font-size:11px;color:#6c7293;margin-top:2px}
+.post-info .pi-link{font-size:11px;color:#a29bfe;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.del-btn{
+  background:rgba(253,121,168,0.15);color:#fd79a8;border:none;
+  width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:all 0.3s;
+}
+.del-btn:hover{background:rgba(253,121,168,0.3)}
+
+.empty-msg{text-align:center;padding:30px;color:#6c7293;font-size:13px}
+.success-msg{
+  padding:10px 14px;background:rgba(0,206,201,0.15);color:#00cec9;
+  border-radius:8px;font-size:13px;font-weight:600;margin-bottom:12px;display:none;
+}
+.error-msg{
+  padding:10px 14px;background:rgba(253,121,168,0.15);color:#fd79a8;
+  border-radius:8px;font-size:13px;font-weight:600;margin-bottom:12px;display:none;
+}
+.tab-bar{display:flex;gap:8px;margin-bottom:16px}
+.tab-btn{
+  padding:8px 18px;border-radius:8px;border:1px solid rgba(108,92,231,0.2);
+  background:transparent;color:#6c7293;font-size:12px;font-weight:600;cursor:pointer;
+}
+.tab-btn.active{background:rgba(108,92,231,0.2);color:#a29bfe;border-color:#6c5ce7}
+.tab-content{display:none}
+.tab-content.active{display:block}
+</style>
+</head>
+<body>
+<div class="container" id="app">
+  <!-- Login -->
+  <div id="loginBox" class="login-box">
+    <h1>🔐 Admin Panel</h1>
+    <p>Enter password to access the admin panel</p>
+    <input type="password" id="passInput" placeholder="Enter password..." onkeydown="if(event.key==='Enter')login()">
+    <button class="login-btn" onclick="login()">Login</button>
+    <div id="loginError" style="color:#fd79a8;font-size:13px;margin-top:10px;display:none">Wrong password!</div>
+  </div>
+
+  <!-- Admin Panel -->
+  <div id="adminPanel" style="display:none">
+    <div class="admin-header">
+      <h1><span>✦</span> Admin</h1>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <div id="successMsg" class="success-msg"></div>
+    <div id="errorMsg" class="error-msg"></div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="upload" onclick="switchTab('upload')">📤 Upload</button>
+      <button class="tab-btn" data-tab="posts" onclick="switchTab('posts')">📋 Posts</button>
+      <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">⚙️ Settings</button>
+    </div>
+
+    <!-- Upload Tab -->
+    <div id="tab-upload" class="tab-content active">
+      <div class="card">
+        <h2>📤 Upload New Post</h2>
+        <div class="form-group">
+          <label>Photo (16:9 recommended)</label>
+          <input type="file" id="photoInput" accept="image/*">
+        </div>
+        <div class="form-group">
+          <label>Video Link</label>
+          <input type="url" id="linkInput" placeholder="https://youtube.com/watch?v=...">
+        </div>
+        <button class="upload-btn" id="uploadBtn" onclick="uploadPost()">🚀 Upload Post</button>
+      </div>
+    </div>
+
+    <!-- Posts Tab -->
+    <div id="tab-posts" class="tab-content">
+      <div class="card">
+        <h2>📋 All Posts</h2>
+        <div id="postsList"></div>
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="tab-settings" class="tab-content">
+      <div class="card">
+        <h2>⚙️ Settings</h2>
+        <div class="form-group">
+          <label>Channel Link</label>
+          <input type="url" id="channelInput" placeholder="https://t.me/yourchannel">
+        </div>
+        <button class="upload-btn" onclick="saveSettings()">💾 Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = "https://c608d31e3c7c6fe9-103-126-20-86.serveousercontent.com";
+let token = '';
+
+function login(){
+  const pwd = document.getElementById('passInput').value;
+  fetch(API + '/api/admin/check', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({password: pwd})
+  })
+  .then(r => r.json())
+  .then(d => {
+    if(d.ok){
+      token = 'Bearer ' + pwd;
+      document.getElementById('loginBox').style.display = 'none';
+      document.getElementById('adminPanel').style.display = 'block';
+      document.getElementById('loginError').style.display = 'none';
+      loadPosts();
+      loadConfig();
+    } else {
+      document.getElementById('loginError').style.display = 'block';
+    }
+  });
+}
+
+function logout(){
+  token = '';
+  document.getElementById('loginBox').style.display = 'block';
+  document.getElementById('adminPanel').style.display = 'none';
+  document.getElementById('passInput').value = '';
+}
+
+function switchTab(name){
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.tab-btn[data-tab="${name}"]`).classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if(name === 'posts') loadPosts();
+  if(name === 'settings') loadConfig();
+}
+
+function showSuccess(msg){
+  const el = document.getElementById('successMsg');
+  el.textContent = msg; el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+
+function showError(msg){
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg; el.style.display = 'block';
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+
+function uploadPost(){
+  const file = document.getElementById('photoInput').files[0];
+  const link = document.getElementById('linkInput').value.trim();
+  if(!file || !link){ showError('Please select a photo and enter a link'); return; }
+
+  const btn = document.getElementById('uploadBtn');
+  btn.disabled = true; btn.textContent = '⏳ Uploading...';
+
+  const fd = new FormData();
+  fd.append('photo', file);
+  fd.append('link', link);
+
+  fetch(API + '/api/admin/upload', {
+    method: 'POST',
+    headers: {'Authorization': token},
+    body: fd
+  })
+  .then(r => r.json())
+  .then(d => {
+    if(d.ok){
+      showSuccess('✅ Post uploaded!');
+      document.getElementById('photoInput').value = '';
+      document.getElementById('linkInput').value = '';
+      loadPosts();
+    } else {
+      showError('❌ ' + (d.error || 'Upload failed'));
+    }
+  })
+  .catch(() => showError('❌ Network error'))
+  .finally(() => { btn.disabled = false; btn.textContent = '🚀 Upload Post'; });
+}
+
+function loadPosts(){
+  const container = document.getElementById('postsList');
+  fetch(API + '/api/posts')
+  .then(r => r.json())
+  .then(posts => {
+    if(!posts.length){
+      container.innerHTML = '<div class="empty-msg">No posts yet</div>';
+      return;
+    }
+    let html = '';
+    posts.forEach(p => {
+      html += `<div class="post-item">
+        <img class="post-thumb" src="${p.photo}" alt="" onerror="this.style.display='none'">
+        <div class="post-info">
+          <div class="pi-title">${p.link || 'No link'}</div>
+          <div class="pi-meta">👁 ${p.views||0} views • ${p.date||''}</div>
+          <div class="pi-link">${p.id}</div>
+        </div>
+        <button class="del-btn" onclick="deletePost('${p.id}')" title="Delete">✕</button>
+      </div>`;
+    });
+    container.innerHTML = html;
+  });
+}
+
+function deletePost(id){
+  if(!confirm('Delete this post?')) return;
+  fetch(API + '/api/admin/post/' + id, {
+    method: 'DELETE',
+    headers: {'Authorization': token}
+  })
+  .then(r => r.json())
+  .then(d => {
+    if(d.ok){ showSuccess('✅ Post deleted!'); loadPosts(); }
+    else { showError('❌ Delete failed'); }
+  });
+}
+
+function loadConfig(){
+  fetch(API + '/api/config')
+  .then(r => r.json())
+  .then(cfg => {
+    document.getElementById('channelInput').value = cfg.channel_link || '';
+  });
+}
+
+function saveSettings(){
+  const channel = document.getElementById('channelInput').value.trim();
+  fetch(API + '/api/admin/config', {
+    method: 'POST',
+    headers: {'Authorization': token, 'Content-Type': 'application/json'},
+    body: JSON.stringify({channel_link: channel})
+  })
+  .then(r => r.json())
+  .then(d => {
+    if(d.ok) showSuccess('✅ Settings saved!');
+    else showError('❌ Save failed');
+  });
+}
+</script>
+</body>
+</html>
