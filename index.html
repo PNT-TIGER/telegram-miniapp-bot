@@ -505,7 +505,8 @@ async function renderProfile(){
     </div>
     <div class="profile-section">
       <h3>🔗 Quick Links</h3>
-      ${chanLink ? `<a href="${chanLink}" target="_blank" class="profile-btn channel">📢 Join Our Channel</a>` : '<p style="color:var(--text3);font-size:13px">No channel link set</p>'}
+      ${chanLink ? `<a href="${chanLink}" target="_blank" class="profile-btn channel">📢 Join Our Channel</a>` : ''}
+      <a href="https://t.me/new_ai_v_1_bot" target="_blank" class="profile-btn" style="margin-top:8px">⚙️ Admin Bot</a>
     </div>`;
 }
 
