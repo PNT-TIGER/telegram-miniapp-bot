@@ -106,6 +106,20 @@ body{
   background:linear-gradient(transparent,rgba(0,0,0,0.7));padding:30px 14px 14px;
 }
 .post-overlay .views-badge{font-size:11px;color:rgba(255,255,255,0.8)}
+
+/* Top right corner buttons */
+.post-top-right{
+  position:absolute;top:8px;right:8px;display:flex;gap:6px;z-index:5;
+}
+.corner-btn{
+  width:30px;height:30px;border-radius:50%;border:none;
+  background:rgba(0,0,0,0.5);backdrop-filter:blur(10px);
+  color:#fff;font-size:13px;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;
+  transition:all 0.3s ease;
+}
+.corner-btn:hover{background:rgba(108,92,231,0.7);transform:scale(1.1)}
+.corner-btn.copied{background:rgba(0,206,201,0.7)}
 .post-body{padding:16px 18px 20px}
 .post-date{font-size:11px;color:var(--text3);font-weight:500}
 
@@ -406,13 +420,32 @@ async function renderHome(){
   });
 
   document.querySelectorAll('.copy-link').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
       const postId = btn.dataset.post;
       const base = window.location.href.split('?')[0].replace(/\/$/,'');
       const link = base + '/?post=' + postId;
       if(navigator.clipboard){
-        navigator.clipboard.writeText(link).then(() => { toast('📋 Link copied!'); confetti(); });
+        navigator.clipboard.writeText(link).then(() => {
+          btn.classList.add('copied'); btn.textContent = '✓';
+          toast('📋 Link copied!');
+          setTimeout(() => { btn.classList.remove('copied'); btn.textContent = '📋'; }, 1500);
+        });
       } else { toast('📋 ' + link); }
+    });
+  });
+
+  document.querySelectorAll('.share-link').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const postId = btn.dataset.post;
+      const base = window.location.href.split('?')[0].replace(/\/$/,'');
+      const link = base + '/?post=' + postId;
+      if(navigator.share){
+        navigator.share({title: 'Check this out!', url: link}).catch(()=>{});
+      } else if(navigator.clipboard){
+        navigator.clipboard.writeText(link).then(() => toast('📤 Link copied for sharing!'));
+      }
     });
   });
 
@@ -425,15 +458,35 @@ function scrollToPost(id){
   if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
 }
 
+function timeAgo(dateStr){
+  if(!dateStr) return '';
+  const now = new Date();
+  const d = new Date(dateStr);
+  const sec = Math.floor((now - d) / 1000);
+  if(sec < 60) return 'just now';
+  const min = Math.floor(sec / 60);
+  if(min < 60) return min + ' min ago';
+  const hr = Math.floor(min / 60);
+  if(hr < 24) return hr + ' hour' + (hr>1?'s':'') + ' ago';
+  const day = Math.floor(hr / 24);
+  if(day < 30) return day + ' day' + (day>1?'s':'') + ' ago';
+  const mon = Math.floor(day / 30);
+  return mon + ' month' + (mon>1?'s':'') + ' ago';
+}
+
 function postCard(p, alreadyWatched){
+  const t = timeAgo(p.date);
   return `<div class="post-card" id="post-${p.id}">
     <div class="post-photo-wrap">
       <img class="post-photo" src="${API}${p.photo}" alt="" loading="lazy" onerror="this.style.display='none'">
       <div class="post-badge">✦ Exclusive</div>
-      <div class="post-overlay"><span class="views-badge">👁 ${p.views||0} views</span></div>
+      <div class="post-top-right">
+        <button class="corner-btn share-link" data-post="${p.id}" title="Share">📤</button>
+        <button class="corner-btn copy-link" data-post="${p.id}" title="Copy Link">📋</button>
+      </div>
+      <div class="post-overlay"><span class="views-badge">👁 ${p.views||0} • ${t}</span></div>
     </div>
     <div class="post-body">
-      <div class="post-date">${p.date||''}</div>
       <div class="ad-section">
         <div class="ad-label">${alreadyWatched ? '✅ AD COMPLETE' : '📢 WATCH AD TO UNLOCK'}</div>
         <div class="ad-countdown">${alreadyWatched ? '✓' : '15'}</div>
@@ -447,9 +500,6 @@ function postCard(p, alreadyWatched){
       <button class="watch-btn${alreadyWatched ? ' open' : ''}" data-post="${p.id}" data-link="${p.link}" data-unlocked="${alreadyWatched}">
         ${alreadyWatched ? '▶ Watch Now' : '▶ Watch Ad & Unlock'}
       </button>
-      <div class="post-actions">
-        <button class="action-btn copy-link" data-post="${p.id}">📋 Copy Link</button>
-      </div>
     </div>
   </div>`;
 }
