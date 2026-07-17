@@ -427,7 +427,7 @@ function scrollToPost(id){
 function postCard(p, alreadyWatched){
   return `<div class="post-card" id="post-${p.id}">
     <div class="post-photo-wrap">
-      <img class="post-photo" src="${API}${p.photo}" alt="" loading="lazy" onerror="this.parentElement.innerHTML+='<div style=background:var(--surface2);width:100%;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;font-size:40px;color:var(--text3)>📹</div>'">
+      <img class="post-photo" src="${API}${p.photo}" alt="" loading="lazy" onerror="this.style.display='none'">
       <div class="post-badge">✦ Exclusive</div>
       <div class="post-overlay"><span class="views-badge">👁 ${p.views||0} views</span></div>
     </div>
