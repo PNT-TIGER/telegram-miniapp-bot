@@ -61,13 +61,35 @@ def admin_upload():
     data = load_data()
     link = request.form.get("link", "")
     file = request.files.get("photo")
+    image_url = request.form.get("image_url", "")
 
-    if not file or not link:
-        return jsonify({"error": "photo and link required"}), 400
+    if not link:
+        return jsonify({"error": "link required"}), 400
 
-    fname = f"{uuid.uuid4().hex[:8]}.jpg"
-    filepath = os.path.join(UPLOAD_DIR, fname)
-    file.save(filepath)
+    fname = ""
+    if file and file.filename:
+        fname = f"{uuid.uuid4().hex[:8]}.jpg"
+        filepath = os.path.join(UPLOAD_DIR, fname)
+        file.save(filepath)
+    elif image_url:
+        try:
+            r = http_requests.get(image_url, timeout=10)
+            if r.status_code == 200:
+                ext = "jpg"
+                ct = r.headers.get("content-type", "")
+                if "png" in ct: ext = "png"
+                elif "gif" in ct: ext = "gif"
+                elif "webp" in ct: ext = "webp"
+                fname = f"{uuid.uuid4().hex[:8]}.{ext}"
+                filepath = os.path.join(UPLOAD_DIR, fname)
+                with open(filepath, "wb") as f:
+                    f.write(r.content)
+            else:
+                return jsonify({"error": "failed to download image"}), 400
+        except:
+            return jsonify({"error": "invalid image URL"}), 400
+    else:
+        return jsonify({"error": "photo or image URL required"}), 400
 
     post = {
         "id": uuid.uuid4().hex[:8],

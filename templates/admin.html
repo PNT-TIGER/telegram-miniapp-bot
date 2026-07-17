@@ -141,12 +141,20 @@ body{
     <div id="tab-upload" class="tab-content active">
       <div class="card">
         <h2>📤 Upload New Post</h2>
-        <div class="form-group">
-          <label>Photo (16:9 recommended)</label>
+        <div style="display:flex;gap:8px;margin-bottom:14px">
+          <button id="tabUploadFile" class="tab-btn active" onclick="setUploadMode('file')">📁 File</button>
+          <button id="tabUploadUrl" class="tab-btn" onclick="setUploadMode('url')">🔗 Image URL</button>
+        </div>
+        <div id="uploadFileGroup" class="form-group">
+          <label>Upload Photo</label>
           <input type="file" id="photoInput" accept="image/*">
         </div>
+        <div id="uploadUrlGroup" class="form-group" style="display:none">
+          <label>Image URL</label>
+          <input type="url" id="imageUrlInput" placeholder="https://example.com/photo.jpg">
+        </div>
         <div class="form-group">
-          <label>Video Link</label>
+          <label>Video Link (click করলে যা ওপেন হবে)</label>
           <input type="url" id="linkInput" placeholder="https://youtube.com/watch?v=...">
         </div>
         <button class="upload-btn" id="uploadBtn" onclick="uploadPost()">🚀 Upload Post</button>
@@ -176,7 +184,7 @@ body{
 </div>
 
 <script>
-const API = window.location.origin;
+const API = "https://c608d31e3c7c6fe9-103-126-20-86.serveousercontent.com";
 let token = '';
 
 function login(){
@@ -217,6 +225,16 @@ function switchTab(name){
   if(name === 'settings') loadConfig();
 }
 
+let uploadMode = 'file';
+
+function setUploadMode(mode){
+  uploadMode = mode;
+  document.getElementById('tabUploadFile').classList.toggle('active', mode === 'file');
+  document.getElementById('tabUploadUrl').classList.toggle('active', mode === 'url');
+  document.getElementById('uploadFileGroup').style.display = mode === 'file' ? 'block' : 'none';
+  document.getElementById('uploadUrlGroup').style.display = mode === 'url' ? 'block' : 'none';
+}
+
 function showSuccess(msg){
   const el = document.getElementById('successMsg');
   el.textContent = msg; el.style.display = 'block';
@@ -230,16 +248,24 @@ function showError(msg){
 }
 
 function uploadPost(){
-  const file = document.getElementById('photoInput').files[0];
   const link = document.getElementById('linkInput').value.trim();
-  if(!file || !link){ showError('Please select a photo and enter a link'); return; }
+  if(!link){ showError('Please enter a link'); return; }
 
   const btn = document.getElementById('uploadBtn');
   btn.disabled = true; btn.textContent = '⏳ Uploading...';
 
   const fd = new FormData();
-  fd.append('photo', file);
   fd.append('link', link);
+
+  if(uploadMode === 'file'){
+    const file = document.getElementById('photoInput').files[0];
+    if(!file){ showError('Please select a photo'); btn.disabled = false; btn.textContent = '🚀 Upload Post'; return; }
+    fd.append('photo', file);
+  } else {
+    const url = document.getElementById('imageUrlInput').value.trim();
+    if(!url){ showError('Please enter an image URL'); btn.disabled = false; btn.textContent = '🚀 Upload Post'; return; }
+    fd.append('image_url', url);
+  }
 
   fetch(API + '/api/admin/upload', {
     method: 'POST',
@@ -252,6 +278,7 @@ function uploadPost(){
       showSuccess('✅ Post uploaded!');
       document.getElementById('photoInput').value = '';
       document.getElementById('linkInput').value = '';
+      document.getElementById('imageUrlInput').value = '';
       loadPosts();
     } else {
       showError('❌ ' + (d.error || 'Upload failed'));
@@ -273,7 +300,7 @@ function loadPosts(){
     let html = '';
     posts.forEach(p => {
       html += `<div class="post-item">
-        <img class="post-thumb" src="${p.photo}" alt="" onerror="this.style.display='none'">
+        <img class="post-thumb" src="${API}${p.photo}" alt="" onerror="this.style.display='none'">
         <div class="post-info">
           <div class="pi-title">${p.link || 'No link'}</div>
           <div class="pi-meta">👁 ${p.views||0} views • ${p.date||''}</div>
