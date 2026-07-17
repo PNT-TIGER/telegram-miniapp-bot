@@ -2,7 +2,7 @@ import json, os, logging, uuid
 from datetime import datetime
 import requests as http_requests
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters, ContextTypes
 
 logging.basicConfig(level=logging.INFO)
@@ -15,8 +15,11 @@ BOT_USERNAME = None
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+ADMIN_APP_URL = "https://pnt-tiger.github.io/telegram-miniapp-bot/admin.html"
+
 def admin_keyboard():
     return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🌐 Open Web Admin", web_app=WebAppInfo(url=ADMIN_APP_URL))],
         [InlineKeyboardButton("📹 Upload Video", callback_data="up_video")],
         [InlineKeyboardButton("📷 Upload Photo", callback_data="up_photo")],
         [InlineKeyboardButton("📁 Upload File", callback_data="up_file")],
