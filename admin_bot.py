@@ -20,12 +20,8 @@ ADMIN_APP_URL = "https://pnt-tiger.github.io/telegram-miniapp-bot/admin.html"
 def admin_keyboard():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("🌐 Open Web Admin", web_app=WebAppInfo(url=ADMIN_APP_URL))],
-        [InlineKeyboardButton("📹 Upload Video", callback_data="up_video")],
-        [InlineKeyboardButton("📷 Upload Photo", callback_data="up_photo")],
-        [InlineKeyboardButton("📁 Upload File", callback_data="up_file")],
-        [InlineKeyboardButton("📋 All Videos", callback_data="list_videos")],
-        [InlineKeyboardButton("📋 All Photos", callback_data="list_photos")],
-        [InlineKeyboardButton("📋 All Files", callback_data="list_files")],
+        [InlineKeyboardButton("📤 Upload (Video/Photo/File)", callback_data="upload")],
+        [InlineKeyboardButton("🔗 All Links", callback_data="all_links")],
     ])
 
 def back_btn():
@@ -78,48 +74,21 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await q.edit_message_text("⚙️ *Admin Panel*", parse_mode="Markdown", reply_markup=admin_keyboard())
         return
 
-    if cb == "up_video":
-        context.user_data["awaiting"] = "video"
-        await q.edit_message_text("📹 Send me the VIDEO file.")
-    elif cb == "up_photo":
-        context.user_data["awaiting"] = "photo"
-        await q.edit_message_text("📷 Send me the PHOTO.")
-    elif cb == "up_file":
-        context.user_data["awaiting"] = "file"
-        await q.edit_message_text("📁 Send me the FILE.")
-    elif cb == "list_videos":
-        files = [f for f in os.listdir(UPLOAD_DIR) if f.endswith((".mp4", ".mov", ".avi", ".mkv"))]
+    if cb == "upload":
+        context.user_data["awaiting"] = "upload"
+        await q.edit_message_text("📤 Send me a Video, Photo, or File. I'll generate a link for it.")
+    elif cb == "all_links":
+        files = [f for f in os.listdir(UPLOAD_DIR) if not f.startswith(".")]
         if not files:
-            await q.edit_message_text("📹 No videos uploaded.", reply_markup=back_btn())
+            await q.edit_message_text("🔗 No uploads yet.", reply_markup=back_btn())
             return
         lines = []
-        for f in files[-10:]:
+        for f in sorted(files, key=lambda x: os.path.getmtime(f"{UPLOAD_DIR}/{x}"), reverse=True)[:20]:
             fid = f.split(".")[0]
             link = f"https://t.me/{BOT_USERNAME}?start=v_{fid}" if BOT_USERNAME else f"v_{fid}"
-            lines.append(f"🎬 `{link}`")
-        await q.edit_message_text("📹 *Video Links:*\n\n" + "\n".join(lines), parse_mode="Markdown", reply_markup=back_btn(), disable_web_page_preview=True)
-    elif cb == "list_photos":
-        files = [f for f in os.listdir(UPLOAD_DIR) if f.endswith((".jpg", ".jpeg", ".png", ".gif", ".webp"))]
-        if not files:
-            await q.edit_message_text("📷 No photos uploaded.", reply_markup=back_btn())
-            return
-        lines = []
-        for f in files[-10:]:
-            fid = f.split(".")[0]
-            link = f"https://t.me/{BOT_USERNAME}?start=v_{fid}" if BOT_USERNAME else f"v_{fid}"
-            lines.append(f"📷 `{link}`")
-        await q.edit_message_text("📷 *Photo Links:*\n\n" + "\n".join(lines), parse_mode="Markdown", reply_markup=back_btn(), disable_web_page_preview=True)
-    elif cb == "list_files":
-        files = [f for f in os.listdir(UPLOAD_DIR) if not f.startswith(".") and not f.endswith((".mp4", ".mov", ".avi", ".mkv", ".jpg", ".jpeg", ".png", ".gif", ".webp"))]
-        if not files:
-            await q.edit_message_text("📁 No files uploaded.", reply_markup=back_btn())
-            return
-        lines = []
-        for f in files[-10:]:
-            fid = f.split(".")[0]
-            link = f"https://t.me/{BOT_USERNAME}?start=v_{fid}" if BOT_USERNAME else f"v_{fid}"
-            lines.append(f"📁 `{link}`")
-        await q.edit_message_text("📁 *File Links:*\n\n" + "\n".join(lines), parse_mode="Markdown", reply_markup=back_btn(), disable_web_page_preview=True)
+            icon = "🎬" if f.endswith((".mp4",".mov",".avi",".mkv")) else "📷" if f.endswith((".jpg",".jpeg",".png",".gif",".webp")) else "📁"
+            lines.append(f"{icon} `{link}`")
+        await q.edit_message_text("🔗 *All Links:*\n\n" + "\n".join(lines), parse_mode="Markdown", reply_markup=back_btn(), disable_web_page_preview=True)
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
@@ -131,46 +100,42 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     fname = None
     caption = None
 
-    if awaiting == "video" and update.message.video:
-        f = update.message.video
-        fid = uuid.uuid4().hex[:8]
-        fname = f"{fid}.mp4"
-        caption = "🎬 Video uploaded!"
-    elif awaiting == "video" and update.message.document:
-        f = update.message.document
-        fid = uuid.uuid4().hex[:8]
-        ext = f.file_name.split(".")[-1] if f.file_name else "mp4"
-        fname = f"{fid}.{ext}"
-        caption = "🎬 Video uploaded!"
-    elif awaiting == "photo" and update.message.photo:
-        f = update.message.photo[-1]
-        fid = uuid.uuid4().hex[:8]
-        fname = f"{fid}.jpg"
-        caption = "📷 Photo uploaded!"
-    elif awaiting == "file" and update.message.document:
-        f = update.message.document
-        fid = uuid.uuid4().hex[:8]
-        ext = f.file_name.split(".")[-1] if f.file_name else "file"
-        fname = f"{fid}.{ext}"
-        caption = "📁 File uploaded!"
-    else:
-        await update.message.reply_text("❓ Please use the admin panel buttons first.")
-        return
+    if awaiting == "upload":
+        file_id = None
+        if update.message.video:
+            f = update.message.video
+            file_id = f.file_id
+            fid = uuid.uuid4().hex[:8]
+            fname = f"{fid}.mp4"
+            caption = "🎬 Video uploaded!"
+        elif update.message.photo:
+            f = update.message.photo[-1]
+            file_id = f.file_id
+            fid = uuid.uuid4().hex[:8]
+            fname = f"{fid}.jpg"
+            caption = "📷 Photo uploaded!"
+        elif update.message.document:
+            f = update.message.document
+            file_id = f.file_id
+            fid = uuid.uuid4().hex[:8]
+            ext = f.file_name.split(".")[-1] if f.file_name else "file"
+            fname = f"{fid}.{ext}"
+            caption = "📁 File uploaded!"
 
-    if fname:
-        r = http_requests.get(f"https://api.telegram.org/bot{TOKEN}/getFile?file_id={f.file_id}")
-        if r.status_code == 200:
-            fp = r.json()["result"]["file_path"]
-            dl = http_requests.get(f"https://api.telegram.org/file/bot{TOKEN}/{fp}")
-            if dl.status_code == 200:
-                with open(f"{UPLOAD_DIR}/{fname}", "wb") as wf:
-                    wf.write(dl.content)
-                link = f"https://t.me/{BOT_USERNAME}?start=v_{fid}" if BOT_USERNAME else f"v_{fid}"
-                await update.message.reply_text(f"{caption}\n🔗 `{link}`", parse_mode="Markdown")
-                context.user_data["awaiting"] = None
-                return
+        if file_id and fname:
+            r = http_requests.get(f"https://api.telegram.org/bot{TOKEN}/getFile?file_id={file_id}")
+            if r.status_code == 200:
+                fp = r.json()["result"]["file_path"]
+                dl = http_requests.get(f"https://api.telegram.org/file/bot{TOKEN}/{fp}")
+                if dl.status_code == 200:
+                    with open(f"{UPLOAD_DIR}/{fname}", "wb") as wf:
+                        wf.write(dl.content)
+                    link = f"https://t.me/{BOT_USERNAME}?start=v_{fid}" if BOT_USERNAME else f"v_{fid}"
+                    await update.message.reply_text(f"{caption}\n🔗 `{link}`", parse_mode="Markdown")
+                    context.user_data["awaiting"] = None
+                    return
 
-    await update.message.reply_text("❌ Upload failed. Try again.")
+    await update.message.reply_text("❓ Please use the admin panel buttons first.")
 
 async def post_init(app: Application):
     global BOT_USERNAME
