@@ -151,6 +151,21 @@ body{
   background:linear-gradient(transparent,rgba(0,0,0,0.8));padding:20px 6px 6px;font-size:10px;
 }
 
+/* FEATURED SLIDER */
+.slider-wrap{overflow-x:auto;scrollbar-width:none;padding:0 14px;margin:10px 0 4px;display:flex;gap:10px}
+.slider-wrap::-webkit-scrollbar{display:none}
+.slide-card{
+  min-width:260px;border-radius:12px;overflow:hidden;position:relative;flex-shrink:0;
+  background:var(--card);border:1px solid rgba(108,92,231,0.15);
+}
+.slide-card img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.slide-info{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,0.9));padding:30px 12px 10px;
+}
+.slide-info .s-title{font-size:13px;font-weight:700}
+.slide-info .s-meta{font-size:10px;color:rgba(255,255,255,0.6)}
+
 /* PROFILE */
 .profile-header{
   text-align:center;padding:24px 20px 16px;
@@ -342,6 +357,23 @@ async function renderHome(cat='all'){
   container.innerHTML='<div class="cat-row"><button class="cat-btn active">All</button><button class="cat-btn">Trending</button><button class="cat-btn">Resources</button><button class="cat-btn">Others</button></div><div class="skel skel-card"></div><div class="skel skel-card"></div>';
   await loadPosts();
 
+  // Featured slider
+  const topPosts = posts.filter(p => p.views > 0 || p.likes > 0).slice(0, 5);
+  let sliderHtml = '';
+  if (topPosts.length > 1) {
+    sliderHtml = '<div class="slider-wrap">';
+    topPosts.forEach(p => {
+      sliderHtml += `<div class="slide-card" onclick="scrollToPost('${p.id}')">
+        <img src="${API}${p.photo}" alt="" onerror="this.style.display='none'">
+        <div class="slide-info">
+          <div class="s-title">${p.title||'Featured'}</div>
+          <div class="s-meta">👁 ${p.views||0} • ❤️ ${p.likes||0}</div>
+        </div>
+      </div>`;
+    });
+    sliderHtml += '</div>';
+  }
+
   const cats=container.querySelector('.cat-row');
   if(cats){
     cats.querySelectorAll('.cat-btn').forEach(b=>{
@@ -359,10 +391,11 @@ async function renderHome(cat='all'){
   else if(cat==='others') filtered=posts.filter(p=>!p.title?.toLowerCase().includes('resource'));
 
   if(!filtered.length){
-    container.innerHTML=(cats?cats.outerHTML:'')+'<div class="empty-state"><div class="e-icon">📂</div><p>No posts yet</p></div>';
+    container.innerHTML=(cats?cats.outerHTML:'')+sliderHtml+'<div class="empty-state"><div class="e-icon">📂</div><p>No posts yet</p></div>';
     return;
   }
   let html=cats?cats.outerHTML:'';
+  html+=sliderHtml;
   for(const p of filtered){
     const us = unlockData[p.id] || {remaining: p.unlock_required, done: false};
     html += postCard(p, us);
@@ -390,7 +423,7 @@ function postCard(p, us){
       <div class="post-meta">
         <span class="like-btn" data-post="${p.id}">❤️ ${p.likes||0}</span>
         <span class="fav-btn" data-post="${p.id}">⭐ ${p.favorites||0}</span>
-        <span>📥 ${p.downloads||0}</span>
+        <span class="dl-btn" data-post="${p.id}">📥 ${p.downloads||0}</span>
       </div>
       <div class="unlock-box">
         <div class="unlock-label">🔓 Unlock Access (<span class="num">${done?0:r}</span> Left)</div>
@@ -467,6 +500,14 @@ function attachEvents(){
       if(!tgUser){toast('Open from Telegram'); return;}
       const res=await api(`/api/favorite/${this.dataset.post}`,{method:'POST',body:JSON.stringify({user_id:tgUser.id})});
       if(res) this.textContent='⭐ '+res.favorites;
+    };
+  });
+
+  document.querySelectorAll('.dl-btn').forEach(btn=>{
+    btn.onclick=async function(){
+      const pid=this.dataset.post;
+      const res=await api(`/api/download/${pid}`,{method:'POST'});
+      if(res) this.textContent='📥 '+res.downloads;
     };
   });
 }
