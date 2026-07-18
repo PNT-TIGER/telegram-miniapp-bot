@@ -75,8 +75,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if cb == "upload":
-        context.user_data["awaiting"] = "upload"
-        await q.edit_message_text("📤 Send me a Video, Photo, or File. I'll generate a link for it.")
+        context.user_data["awaiting"] = "post_title"
+        await q.edit_message_text("📤 Send the TITLE for this post.")
     elif cb == "all_links":
         files = [f for f in os.listdir(UPLOAD_DIR) if not f.startswith(".")]
         if not files:
@@ -97,45 +97,101 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not awaiting:
         return
 
-    fname = None
-    caption = None
+    if awaiting == "post_title" and update.message.text:
+        context.user_data["post_title"] = update.message.text.strip()
+        context.user_data["awaiting"] = "post_photo"
+        await update.message.reply_text("✅ Title saved! Now send the PHOTO or VIDEO (thumbnail).")
+        return
 
-    if awaiting == "upload":
+    if awaiting == "post_photo":
         file_id = None
+        fid = uuid.uuid4().hex[:8]
         if update.message.video:
-            f = update.message.video
-            file_id = f.file_id
-            fid = uuid.uuid4().hex[:8]
+            file_id = update.message.video.file_id
             fname = f"{fid}.mp4"
-            caption = "🎬 Video uploaded!"
         elif update.message.photo:
-            f = update.message.photo[-1]
-            file_id = f.file_id
-            fid = uuid.uuid4().hex[:8]
+            file_id = update.message.photo[-1].file_id
             fname = f"{fid}.jpg"
-            caption = "📷 Photo uploaded!"
         elif update.message.document:
-            f = update.message.document
-            file_id = f.file_id
-            fid = uuid.uuid4().hex[:8]
-            ext = f.file_name.split(".")[-1] if f.file_name else "file"
+            file_id = update.message.document.file_id
+            ext = update.message.document.file_name.split(".")[-1] if update.message.document.file_name else "file"
             fname = f"{fid}.{ext}"
-            caption = "📁 File uploaded!"
+        else:
+            await update.message.reply_text("❌ Send a photo, video, or file.")
+            return
+        r = http_requests.get(f"https://api.telegram.org/bot{TOKEN}/getFile?file_id={file_id}")
+        if r.status_code == 200:
+            fp = r.json()["result"]["file_path"]
+            dl = http_requests.get(f"https://api.telegram.org/file/bot{TOKEN}/{fp}")
+            if dl.status_code == 200:
+                os.makedirs(UPLOAD_DIR, exist_ok=True)
+                with open(f"{UPLOAD_DIR}/{fname}", "wb") as wf:
+                    wf.write(dl.content)
+                context.user_data["post_photo"] = fname
+                context.user_data["awaiting"] = "post_link"
+                await update.message.reply_text("✅ Thumbnail saved! Now send the FINAL LINK.")
+                return
+        await update.message.reply_text("❌ Download failed. Try again.")
+        return
 
-        if file_id and fname:
-            r = http_requests.get(f"https://api.telegram.org/bot{TOKEN}/getFile?file_id={file_id}")
-            if r.status_code == 200:
-                fp = r.json()["result"]["file_path"]
-                dl = http_requests.get(f"https://api.telegram.org/file/bot{TOKEN}/{fp}")
-                if dl.status_code == 200:
-                    with open(f"{UPLOAD_DIR}/{fname}", "wb") as wf:
-                        wf.write(dl.content)
-                    link = f"https://t.me/{BOT_USERNAME}?start=v_{fid}" if BOT_USERNAME else f"v_{fid}"
-                    await update.message.reply_text(f"{caption}\n🔗 `{link}`", parse_mode="Markdown")
-                    context.user_data["awaiting"] = None
-                    return
+    if awaiting == "post_link" and update.message.text:
+        context.user_data["post_link"] = update.message.text.strip()
+        context.user_data["awaiting"] = "post_clicks"
+        await update.message.reply_text("✅ Link saved! Send UNLOCK COUNT (e.g. 4):")
+        return
 
-    await update.message.reply_text("❓ Please use the admin panel buttons first.")
+    if awaiting == "post_clicks" and update.message.text:
+        try:
+            clicks = int(update.message.text.strip())
+            if clicks < 1 or clicks > 20:
+                await update.message.reply_text("❌ Send 1-20.")
+                return
+        except:
+            await update.message.reply_text("❌ Send a valid number.")
+            return
+
+        title = context.user_data.get("post_title", "Untitled")
+        photo = context.user_data.get("post_photo", "")
+        link = context.user_data.get("post_link", "")
+        if not link:
+            await update.message.reply_text("❌ Missing data. Start again.")
+            context.user_data["awaiting"] = None
+            return
+
+        try:
+            with open("posts.json") as f:
+                data = json.load(f)
+        except:
+            data = {"posts": [], "users": {}, "config": {}}
+
+        post = {
+            "id": uuid.uuid4().hex[:8],
+            "title": title, "photo": photo, "link": link,
+            "unlock_required": clicks,
+            "views": 0, "viewers": [], "downloads": 0,
+            "likes": [], "favorites": [], "unlock_clicks": {},
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        }
+        data["posts"].insert(0, post)
+        with open("posts.json", "w") as f:
+            json.dump(data, f, indent=2)
+
+        for k in ["post_title", "post_photo", "post_link"]:
+            context.user_data.pop(k, None)
+        context.user_data["awaiting"] = None
+
+        bname = BOT_USERNAME or "bot"
+        await update.message.reply_text(
+            f"✅ *Post Created!*\n"
+            f"📌 `{title}`\n"
+            f"🔢 Unlock: {clicks} clicks\n"
+            f"🆔 `{post['id']}`\n"
+            f"🔗 `https://t.me/{bname}?start=v_{post['id']}`",
+            parse_mode="Markdown"
+        )
+        return
+
+    await update.message.reply_text("❓ Use /admin to start.")
 
 async def post_init(app: Application):
     global BOT_USERNAME
