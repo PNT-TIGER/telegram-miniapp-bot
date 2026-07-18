@@ -3,283 +3,264 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>VIP Media Hub</title>
+<title>Media Hub</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
-:root {
-  --bg: #0a0e1a;
-  --surface: #121829;
-  --surface2: #1a2240;
-  --card-bg: linear-gradient(135deg, #1a2240, #0f1729);
-  --primary: #6c5ce7;
-  --primary-light: #a29bfe;
-  --primary-dark: #4834d4;
-  --accent: #fd79a8;
-  --accent2: #00cec9;
-  --gold: #fdcb6e;
-  --text: #fff;
-  --text2: #b0b8d1;
-  --text3: #6c7293;
-  --shadow: 0 8px 32px rgba(108,92,231,0.15);
-  --radius: 16px;
-  --radius-sm: 10px;
+:root{
+  --bg:#0a0e1a;--surface:#121829;--surface2:#1a2240;
+  --card:linear-gradient(135deg,#1a2240,#0f1729);
+  --primary:#6c5ce7;--primary-light:#a29bfe;--accent:#fd79a8;
+  --gold:#fdcb6e;--green:#00cec9;--text:#fff;--text2:#b0b8d1;--text3:#6c7293;
+  --radius:14px;--radius-sm:10px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{
-  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
-  background:var(--bg);color:var(--text);min-height:100vh;
-  padding-bottom:80px;overflow-x:hidden;
+  font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;padding-bottom:75px;overflow-x:hidden;
 }
 
-@keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(30px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-@keyframes glow{0%,100%{box-shadow:0 0 20px rgba(108,92,231,0.3)}50%{box-shadow:0 0 40px rgba(108,92,231,0.6)}}
-@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 @keyframes bounceIn{0%{opacity:0;transform:scale(0.3)}50%{transform:scale(1.05)}70%{transform:scale(0.9)}100%{opacity:1;transform:scale(1)}}
 @keyframes gradientBG{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-@keyframes countdownPulse{0%,100%{opacity:1}50%{opacity:0.5}}
-@keyframes adSlide{from{transform:translateX(-100%)}to{transform:translateX(0)}}
-@keyframes confetti{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(-100px) rotate(720deg);opacity:0}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 
-.page{display:none;padding:0 0 20px;animation:fadeIn 0.4s ease}
+.page{display:none;padding:0 0 10px;animation:fadeIn 0.3s ease}
 .page.active{display:block}
 
 /* HEADER */
 .app-header{
   background:linear-gradient(135deg,#6c5ce7,#4834d4,#fd79a8);
   background-size:200% 200%;animation:gradientBG 4s ease infinite;
-  padding:20px 20px 40px;border-radius:0 0 30px 30px;position:relative;overflow:hidden;
+  padding:18px 20px 25px;border-radius:0 0 24px 24px;position:relative;overflow:hidden;
 }
-.app-header::before{
-  content:'';position:absolute;top:-50%;right:-30%;width:200px;height:200px;
-  background:rgba(255,255,255,0.05);border-radius:50%;
-}
-.app-header::after{
-  content:'';position:absolute;bottom:-30%;left:-20%;width:150px;height:150px;
-  background:rgba(255,255,255,0.05);border-radius:50%;
-}
-.header-title{font-size:22px;font-weight:900;letter-spacing:-0.5px;position:relative;z-index:1}
+.header-top{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}
+.header-title{font-size:20px;font-weight:800}
 .header-title span{color:var(--gold)}
-.header-sub{font-size:12px;color:rgba(255,255,255,0.7);margin-top:4px;position:relative;z-index:1}
+.header-badge{
+  background:rgba(255,255,255,0.15);backdrop-filter:blur(10px);
+  padding:4px 12px;border-radius:20px;font-size:10px;font-weight:600;
+}
+.header-search{
+  margin-top:14px;position:relative;z-index:1;display:flex;gap:8px;
+}
+.header-search input{
+  flex:1;padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);
+  background:rgba(255,255,255,0.1);color:#fff;font-size:13px;outline:none;
+  backdrop-filter:blur(10px);
+}
+.header-search input::placeholder{color:rgba(255,255,255,0.5)}
+.header-search input:focus{border-color:rgba(255,255,255,0.4)}
+.header-search button{
+  padding:10px 16px;border-radius:10px;border:none;
+  background:rgba(255,255,255,0.2);color:#fff;font-size:13px;font-weight:600;cursor:pointer;
+}
 
 /* BOTTOM NAV */
 .bottom-nav{
-  position:fixed;bottom:12px;left:12px;right:12px;
+  position:fixed;bottom:10px;left:10px;right:10px;
   background:rgba(18,24,41,0.95);backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
-  border-radius:20px;padding:8px 0;display:flex;justify-content:space-around;
-  z-index:100;border:1px solid rgba(108,92,231,0.2);box-shadow:0 4px 30px rgba(0,0,0,0.5);
+  border-radius:18px;padding:6px 0;display:flex;justify-content:space-around;
+  z-index:100;border:1px solid rgba(108,92,231,0.2);
 }
 .nav-item{
-  display:flex;flex-direction:column;align-items:center;gap:2px;
-  background:none;border:none;color:var(--text3);font-size:10px;font-weight:500;
-  cursor:pointer;padding:6px 16px;transition:all 0.3s ease;
+  display:flex;flex-direction:column;align-items:center;gap:1px;
+  background:none;border:none;color:var(--text3);font-size:9px;font-weight:500;
+  cursor:pointer;padding:5px 12px;transition:all 0.3s ease;
 }
 .nav-item.active{color:var(--primary-light)}
-.nav-item svg{width:22px;height:22px;fill:currentColor;transition:all 0.3s ease}
+.nav-item svg{width:20px;height:20px;fill:currentColor}
+
+/* CATEGORY */
+.cat-row{display:flex;gap:8px;padding:12px 16px 6px;overflow-x:auto;scrollbar-width:none}
+.cat-btn{
+  padding:7px 18px;border-radius:20px;border:1px solid rgba(108,92,231,0.2);
+  background:transparent;color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;
+  white-space:nowrap;transition:all 0.3s ease;
+}
+.cat-btn.active{background:rgba(108,92,231,0.25);color:var(--primary-light);border-color:var(--primary)}
 
 /* POST CARD */
 .post-card{
-  margin:16px 16px 20px;border-radius:var(--radius);
-  background:var(--card-bg);overflow:hidden;
-  border:1px solid rgba(108,92,231,0.15);
-  animation:fadeUp 0.5s ease backwards;box-shadow:var(--shadow);
+  margin:10px 14px 14px;border-radius:var(--radius);
+  background:var(--card);overflow:hidden;
+  border:1px solid rgba(108,92,231,0.1);
+  animation:fadeUp 0.4s ease backwards;
 }
-.post-card:nth-child(1){animation-delay:0.05s}
-.post-card:nth-child(2){animation-delay:0.1s}
-.post-card:nth-child(3){animation-delay:0.15s}
-.post-card:nth-child(4){animation-delay:0.2s}
+.post-card:nth-child(1){animation-delay:0.04s}
+.post-card:nth-child(2){animation-delay:0.08s}
+.post-card:nth-child(3){animation-delay:0.12s}
 
 .post-photo-wrap{position:relative;overflow:hidden;background:#000}
 .post-photo{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;max-height:180px}
-.post-photo-wrap:hover .post-photo{transform:scale(1.05)}
-.post-badge{
-  position:absolute;top:12px;left:12px;
-  background:linear-gradient(135deg,#fdcb6e,#e17055);
-  padding:4px 12px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:0.5px;
-}
-.post-overlay{
-  position:absolute;bottom:0;left:0;right:0;
-  background:linear-gradient(transparent,rgba(0,0,0,0.7));padding:30px 14px 14px;
-}
-.post-overlay .views-badge{font-size:11px;color:rgba(255,255,255,0.8)}
 
-/* Top right corner buttons */
-.post-top-right{
-  position:absolute;top:8px;right:8px;display:flex;gap:6px;z-index:5;
+/* corner btns */
+.post-corner{
+  position:absolute;top:8px;right:8px;display:flex;gap:5px;z-index:5;
 }
 .corner-btn{
-  width:30px;height:30px;border-radius:50%;border:none;
+  width:28px;height:28px;border-radius:50%;border:none;
   background:rgba(0,0,0,0.5);backdrop-filter:blur(10px);
-  color:#fff;font-size:13px;cursor:pointer;display:flex;
-  align-items:center;justify-content:center;
-  transition:all 0.3s ease;
+  color:#fff;font-size:11px;cursor:pointer;display:flex;
+  align-items:center;justify-content:center;transition:all 0.3s ease;
 }
 .corner-btn:hover{background:rgba(108,92,231,0.7);transform:scale(1.1)}
-.corner-btn.copied{background:rgba(0,206,201,0.7)}
-.post-body{padding:16px 18px 20px}
-.post-date{font-size:11px;color:var(--text3);font-weight:500}
 
-/* AD / TIMER SECTION */
-.ad-section{
-  background:linear-gradient(135deg,rgba(108,92,231,0.1),rgba(253,121,168,0.05));
-  border:1px solid rgba(108,92,231,0.2);
-  border-radius:var(--radius-sm);padding:16px;margin-top:12px;text-align:center;
-  position:relative;overflow:hidden;
+.post-info{position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,0.8));padding:30px 12px 10px;
 }
-.ad-section::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,var(--primary),var(--accent));
-}
-.ad-label{
-  font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;
-  letter-spacing:1px;margin-bottom:6px;
-}
-.ad-countdown{
-  font-size:36px;font-weight:900;background:linear-gradient(90deg,var(--gold),var(--accent));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  animation:countdownPulse 1s ease infinite;margin:4px 0;
-}
-.ad-bar-wrap{
-  width:100%;height:4px;background:rgba(255,255,255,0.1);border-radius:4px;
-  margin:10px 0;overflow:hidden;
-}
-.ad-bar-fill{
-  height:100%;width:0%;background:linear-gradient(90deg,var(--primary),var(--accent));
-  border-radius:4px;transition:width 0.5s ease;
-}
-.ad-text{font-size:12px;color:var(--text2);margin-top:4px;min-height:18px}
+.post-info .pi-views{font-size:10px;color:rgba(255,255,255,0.7)}
+.post-info .pi-title{font-size:13px;font-weight:700;margin-top:2px}
 
-.ad-sponsored{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  padding:8px 12px;background:rgba(0,0,0,0.2);border-radius:8px;margin-top:10px;
-  font-size:11px;color:var(--text3);
-}
-.ad-sponsored .sparkle{color:var(--gold);animation:pulse 1.5s ease infinite}
+.post-body{padding:12px 14px 14px}
+.post-meta{display:flex;gap:12px;margin-bottom:8px;font-size:11px;color:var(--text2)}
+.post-meta span{display:flex;align-items:center;gap:3px;cursor:pointer}
 
-/* WATCH BTN */
-.watch-btn{
+/* UNLOCK */
+.unlock-box{
+  background:rgba(108,92,231,0.08);border:1px solid rgba(108,92,231,0.15);
+  border-radius:var(--radius-sm);padding:10px 14px;margin-top:8px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.unlock-label{font-size:12px;font-weight:600}
+.unlock-label .num{color:var(--gold);font-weight:800}
+.unlock-btn{
   background:linear-gradient(135deg,var(--primary),var(--primary-dark));
-  color:#fff;border:none;border-radius:var(--radius-sm);
-  padding:14px 32px;font-size:15px;font-weight:700;cursor:pointer;
-  width:100%;transition:all 0.3s ease;letter-spacing:0.3px;
-  position:relative;overflow:hidden;
+  color:#fff;border:none;border-radius:8px;
+  padding:8px 20px;font-size:12px;font-weight:700;cursor:pointer;
+  min-width:80px;transition:all 0.3s ease;
 }
-.watch-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(108,92,231,0.4)}
-.watch-btn:active{transform:scale(0.97)}
-.watch-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none}
-.watch-btn.open{
+.unlock-btn:active{transform:scale(0.95)}
+.unlock-btn.open-now{
   background:linear-gradient(135deg,#00cec9,#00b894);
-  animation:glow 2s ease infinite;
+  animation:pulse 1.5s ease infinite;
 }
+.unlock-msg{font-size:11px;color:var(--gold);margin-top:4px;min-height:16px}
 
-/* ACTIONS */
-.post-actions{display:flex;gap:10px;margin-top:14px}
-.action-btn{
-  flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
-  background:rgba(108,92,231,0.1);color:var(--text2);border:1px solid rgba(108,92,231,0.2);
-  border-radius:var(--radius-sm);padding:10px;font-size:12px;font-weight:600;
-  cursor:pointer;transition:all 0.3s ease;text-decoration:none;
+/* BROWSER */
+.browser-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:2px;
 }
-.action-btn:hover{background:rgba(108,92,231,0.2);transform:translateY(-1px)}
-.action-btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border:none}
-
-/* ALBUMS */
-.albums-header{padding:16px 20px 8px}
-.albums-header h2{font-size:20px;font-weight:800}
-.albums-header p{font-size:12px;color:var(--text3);margin-top:2px}
-.albums-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:0 3px}
-.albums-grid img{
-  width:100%;aspect-ratio:1;object-fit:cover;cursor:pointer;
-  transition:all 0.4s ease;animation:fadeIn 0.5s ease backwards;
+.browser-grid .b-item{position:relative;overflow:hidden;cursor:pointer}
+.browser-grid img{width:100%;aspect-ratio:1;object-fit:cover;display:block;transition:transform 0.3s}
+.browser-grid img:hover{transform:scale(1.05)}
+.browser-grid .b-overlay{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(transparent,rgba(0,0,0,0.8));padding:20px 6px 6px;font-size:10px;
 }
-.albums-grid img:hover{transform:scale(1.05);z-index:2;position:relative;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,0.5)}
 
 /* PROFILE */
 .profile-header{
-  text-align:center;padding:30px 20px;
-  background:linear-gradient(135deg,rgba(108,92,231,0.15),rgba(253,121,168,0.1));
-  margin:16px;border-radius:var(--radius);position:relative;overflow:hidden;
+  text-align:center;padding:24px 20px 16px;
 }
-.profile-header::before{
-  content:'';position:absolute;top:-40%;right:-20%;width:120px;height:120px;
-  background:rgba(108,92,231,0.1);border-radius:50%;
+.profile-avatar{
+  width:80px;height:80px;border-radius:50%;object-fit:cover;
+  border:3px solid var(--primary);margin-bottom:8px;
+  animation:bounceIn 0.6s ease;
 }
-.profile-photo{
-  width:90px;height:90px;border-radius:50%;object-fit:cover;
-  margin-bottom:10px;border:3px solid var(--primary);
-  box-shadow:0 0 30px rgba(108,92,231,0.3);
-  animation:bounceIn 0.6s ease;position:relative;z-index:1;
+.profile-name{font-size:18px;font-weight:700}
+.profile-id{font-size:11px;color:var(--text3);margin-top:2px}
+.profile-badge{
+  display:inline-block;margin-top:4px;padding:2px 14px;
+  background:linear-gradient(135deg,var(--gold),#e17055);border-radius:20px;
+  font-size:10px;font-weight:700;color:#000;
 }
-.profile-name{font-size:20px;font-weight:800;position:relative;z-index:1}
-.profile-id{font-size:12px;color:var(--text3);margin-top:2px;position:relative;z-index:1}
+
 .profile-section{
-  background:var(--card-bg);border:1px solid rgba(108,92,231,0.15);
-  border-radius:var(--radius);padding:18px 20px;margin:0 16px 12px;
-  animation:fadeUp 0.4s ease backwards;
+  background:var(--card);border:1px solid rgba(108,92,231,0.1);
+  border-radius:var(--radius);padding:14px 16px;margin:0 14px 10px;
+  animation:fadeUp 0.3s ease backwards;
 }
-.profile-section h3{font-size:13px;color:var(--text3);font-weight:600;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px}
-.stat-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;font-weight:500}
-.stat-row span:last-child{color:var(--primary-light)}
-.profile-btn{
-  display:block;width:100%;padding:14px;
-  background:linear-gradient(135deg,var(--primary),var(--primary-dark));
-  color:#fff;border:none;border-radius:var(--radius-sm);font-size:14px;
-  font-weight:700;cursor:pointer;text-align:center;text-decoration:none;
-  transition:all 0.3s ease;letter-spacing:0.5px;
+.profile-section h3{
+  font-size:11px;color:var(--text3);font-weight:600;
+  margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;
 }
-.profile-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(108,92,231,0.4)}
-.profile-btn.channel{background:linear-gradient(135deg,#e17055,#fdcb6e);color:#000}
+.p-row{display:flex;justify-content:space-between;padding:5px 0;font-size:12px;font-weight:500}
+.p-row .val{color:var(--primary-light);font-weight:700}
+.p-btn{
+  display:block;width:100%;padding:11px;border-radius:8px;border:none;
+  font-size:12px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;
+  margin-top:6px;transition:all 0.3s ease;
+}
+.p-btn.primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff}
+.p-btn.gold{background:linear-gradient(135deg,var(--gold),#e17055);color:#000}
+.p-btn.green{background:linear-gradient(135deg,#00cec9,#00b894);color:#fff}
+
+/* SUPPORT */
+.support-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 14px}
+.s-card{
+  background:var(--card);border:1px solid rgba(108,92,231,0.1);
+  border-radius:var(--radius);padding:18px 14px;text-align:center;cursor:pointer;
+  transition:all 0.3s ease;text-decoration:none;color:var(--text);
+}
+.s-card:hover{transform:translateY(-2px);border-color:var(--primary)}
+.s-icon{font-size:28px;margin-bottom:6px}
+.s-label{font-size:12px;font-weight:600}
+
+/* REDEEM */
+.redeem-row{display:flex;gap:8px;margin-top:6px}
+.redeem-row input{
+  flex:1;padding:10px 12px;border-radius:8px;border:1px solid rgba(108,92,231,0.2);
+  background:var(--surface2);color:#fff;font-size:12px;outline:none;
+}
+.redeem-row input:focus{border-color:var(--primary)}
+.redeem-row button{
+  padding:10px 18px;border-radius:8px;border:none;
+  background:linear-gradient(135deg,var(--gold),#e17055);color:#000;
+  font-size:12px;font-weight:700;cursor:pointer;
+}
 
 /* TOAST */
 .toast{
-  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
   background:rgba(18,24,41,0.95);backdrop-filter:blur(20px);
-  color:#fff;padding:12px 24px;border-radius:var(--radius-sm);
-  font-size:13px;font-weight:600;z-index:200;display:none;
-  box-shadow:0 8px 30px rgba(0,0,0,0.5);border:1px solid rgba(108,92,231,0.3);
+  color:#fff;padding:10px 20px;border-radius:10px;
+  font-size:12px;font-weight:600;z-index:200;display:none;
+  border:1px solid rgba(108,92,231,0.3);
 }
-
-/* CONFETTI */
-.confetti-piece{
-  position:fixed;width:8px;height:8px;z-index:300;pointer-events:none;
-  animation:confetti 1.5s ease forwards;
-}
-
-/* EMPTY STATE */
-.empty-state{text-align:center;padding:80px 20px}
-.empty-state svg{width:60px;height:60px;fill:var(--text3);margin-bottom:16px;opacity:0.5}
-.empty-state p{font-size:14px;color:var(--text3);font-weight:500}
 
 /* SKELETON */
-.skeleton{background:linear-gradient(90deg,var(--surface2) 25%,var(--surface) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
-.skeleton-card{height:200px;margin:16px;border-radius:var(--radius)}
-.skeleton-line{height:14px;margin:12px 16px}
+.skel{background:linear-gradient(90deg,var(--surface2) 25%,var(--surface) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:8px}
+.skel-card{height:160px;margin:10px 14px;border-radius:var(--radius)}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 20px}
+.empty-state .e-icon{font-size:36px;margin-bottom:8px;opacity:0.4}
+.empty-state p{font-size:13px;color:var(--text3)}
 </style>
 </head>
 <body>
 
 <div class="app-header">
-  <div class="header-title"><span>✦</span> VIP Media</div>
-  <div class="header-sub">Watch ads & unlock premium content</div>
+  <div class="header-top">
+    <div class="header-title"><span>✦</span> Media Hub</div>
+    <span class="header-badge">🔋 v2.0</span>
+  </div>
+  <div class="header-search">
+    <input id="searchInput" placeholder="Search by ID or paste link..." onkeydown="if(event.key==='Enter')doSearch()">
+    <button onclick="doSearch()">🔍</button>
+  </div>
 </div>
 
 <div id="page-home" class="page active"></div>
-<div id="page-albums" class="page"></div>
+<div id="page-browser" class="page"></div>
 <div id="page-profile" class="page"></div>
+<div id="page-support" class="page"></div>
 
 <nav class="bottom-nav">
   <button class="nav-item active" data-page="home">
-    <svg viewBox="0 0 24 24"><path d="M12 3L4 9v12h5v-7h6v7h5V9z"/></svg><span>Home</span>
+    <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Home</span>
   </button>
-  <button class="nav-item" data-page="albums">
-    <svg viewBox="0 0 24 24"><path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"/></svg><span>Albums</span>
+  <button class="nav-item" data-page="browser">
+    <svg viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg><span>Browser</span>
   </button>
   <button class="nav-item" data-page="profile">
     <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg><span>Profile</span>
+  </button>
+  <button class="nav-item" data-page="support">
+    <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg><span>Support</span>
   </button>
 </nav>
 
@@ -287,287 +268,336 @@ body{
 
 <script>
 const API = "https://c608d31e3c7c6fe9-103-126-20-86.serveousercontent.com";
-const AD_DURATION = 15;
 let tg = window.Telegram ? Telegram.WebApp : null;
 if(tg) tg.expand();
 let tgUser = null;
 if(tg && tg.initDataUnsafe && tg.initDataUnsafe.user) tgUser = tg.initDataUnsafe.user;
 let posts = [];
-let adTimers = {};
+let unlockData = {};
+let userData = null;
 
 document.querySelectorAll('.nav-item').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    const page = document.getElementById('page-' + btn.dataset.page);
-    page.classList.add('active');
-    page.style.animation = 'none';
-    void page.offsetWidth;
-    page.style.animation = 'fadeIn 0.4s ease';
-    if(btn.dataset.page === 'home') renderHome();
-    if(btn.dataset.page === 'albums') renderAlbums();
-    if(btn.dataset.page === 'profile') renderProfile();
+    const pg = document.getElementById('page-'+btn.dataset.page);
+    pg.classList.add('active');
+    pg.style.animation='none'; void pg.offsetWidth;
+    pg.style.animation='fadeIn 0.3s ease';
+    if(btn.dataset.page==='home') renderHome();
+    if(btn.dataset.page==='browser') renderBrowser();
+    if(btn.dataset.page==='profile') renderProfile();
+    if(btn.dataset.page==='support') renderSupport();
   });
 });
 
-function toast(msg){
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.style.display = 'block';
-  el.style.animation = 'none'; void el.offsetWidth;
-  el.style.animation = 'fadeIn 0.3s ease';
-  setTimeout(() => el.style.display = 'none', 2000);
+function toast(m){
+  const e=document.getElementById('toast');
+  e.textContent=m; e.style.display='block';
+  e.style.animation='none'; void e.offsetWidth;
+  e.style.animation='fadeIn 0.3s ease';
+  setTimeout(()=>e.style.display='none',2000);
 }
 
-function confetti(){
-  const colors = ['#6c5ce7','#fd79a8','#fdcb6e','#00cec9','#a29bfe','#e17055'];
-  for(let i=0;i<20;i++){
-    const el = document.createElement('div');
-    el.className = 'confetti-piece';
-    el.style.left = Math.random()*100+'%'; el.style.top = '50%';
-    el.style.background = colors[Math.floor(Math.random()*colors.length)];
-    el.style.borderRadius = Math.random()>0.5 ? '50%' : '2px';
-    el.style.animationDelay = Math.random()*0.5+'s';
-    el.style.animationDuration = (1+Math.random())+'s';
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 3000);
-  }
-}
-
-async function fetchAPI(path, opts={}){
+async function api(path, opts={}){
   try{
-    const r = await fetch(API+path, {headers:{'Content-Type':'application/json'},...opts});
+    const r=await fetch(API+path,{headers:{'Content-Type':'application/json'},...opts});
     return await r.json();
   }catch(e){return null}
 }
 
-async function loadPosts(){posts = await fetchAPI('/api/posts')||[]; return posts}
+async function loadPosts(){posts=await api('/api/posts')||[]; return posts}
 
-// ====== HOME ======
-async function renderHome(){
-  const container = document.getElementById('page-home');
-  container.innerHTML = '<div class="skeleton skeleton-card"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-card"></div>';
-  await loadPosts();
-  if(!posts.length){
-    container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><p>No content yet — stay tuned!</p></div>';
-    return;
+function timeAgo(d){
+  if(!d) return '';
+  const s=Math.floor((new Date()-new Date(d))/1000);
+  if(s<60) return 'just now';
+  const m=Math.floor(s/60); if(m<60) return m+'m';
+  const h=Math.floor(m/60); if(h<24) return h+'h';
+  const dy=Math.floor(h/24); if(dy<30) return dy+'d';
+  return Math.floor(dy/30)+'mo';
+}
+
+function doSearch(){
+  const q=document.getElementById('searchInput').value.trim();
+  if(!q) return;
+  const found=posts.find(p=>p.id===q||p.link===q||p.title?.toLowerCase().includes(q.toLowerCase()));
+  if(found){
+    scrollToPost(found.id);
+    document.querySelector('[data-page="home"]').click();
+  }else{
+    toast('❌ Not found');
   }
-  let html = '';
-  for(const p of posts){
-    const alreadyWatched = adTimers[p.id] && adTimers[p.id].done;
-    html += postCard(p, alreadyWatched);
-  }
-  container.innerHTML = html;
-
-  document.querySelectorAll('.watch-btn').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      const postId = btn.dataset.post;
-      const link = btn.dataset.link;
-
-      if(btn.dataset.unlocked === 'true'){
-        window.open(link, '_blank');
-        return;
-      }
-
-      if(!tgUser){ toast('Open from Telegram'); return; }
-      if(btn.disabled) return;
-
-      btn.disabled = true;
-      const card = btn.closest('.post-card');
-      const countdownEl = card.querySelector('.ad-countdown');
-      const barFill = card.querySelector('.ad-bar-fill');
-      const adText = card.querySelector('.ad-text');
-      const adLabel = card.querySelector('.ad-label');
-
-      adLabel.textContent = '📢 AD • Please wait';
-      let remaining = AD_DURATION;
-      countdownEl.textContent = remaining;
-      barFill.style.width = '0%';
-      adText.textContent = 'Watching ad...';
-
-      const interval = setInterval(() => {
-        remaining--;
-        countdownEl.textContent = remaining;
-        const pct = ((AD_DURATION - remaining) / AD_DURATION) * 100;
-        barFill.style.width = pct + '%';
-
-        if(remaining <= 3 && remaining > 0){
-          adText.textContent = 'Ad ends in ' + remaining + 's...';
-        }
-
-        if(remaining <= 0){
-          clearInterval(interval);
-          countdownEl.textContent = '✓';
-          barFill.style.width = '100%';
-          adLabel.textContent = '✅ AD COMPLETE';
-          adText.textContent = '🎉 Content unlocked!';
-
-          btn.textContent = '▶ Watch Now';
-          btn.disabled = false;
-          btn.classList.add('open');
-          btn.dataset.unlocked = 'true';
-
-          adTimers[postId] = {done: true};
-          confetti();
-          toast('🎉 Content Unlocked!');
-
-          fetchAPI(`/api/view/${postId}`, {
-            method:'POST', body:JSON.stringify({user_id: tgUser.id})
-          });
-        }
-      }, 1000);
-    });
-  });
-
-  document.querySelectorAll('.copy-link').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const postId = btn.dataset.post;
-      const base = window.location.href.split('?')[0].replace(/\/$/,'');
-      const link = base + '/?post=' + postId;
-      if(navigator.clipboard){
-        navigator.clipboard.writeText(link).then(() => {
-          btn.classList.add('copied'); btn.textContent = '✓';
-          toast('📋 Link copied!');
-          setTimeout(() => { btn.classList.remove('copied'); btn.textContent = '📋'; }, 1500);
-        });
-      } else { toast('📋 ' + link); }
-    });
-  });
-
-  document.querySelectorAll('.share-link').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const postId = btn.dataset.post;
-      const base = window.location.href.split('?')[0].replace(/\/$/,'');
-      const link = base + '/?post=' + postId;
-      if(navigator.share){
-        navigator.share({title: 'Check this out!', url: link}).catch(()=>{});
-      } else if(navigator.clipboard){
-        navigator.clipboard.writeText(link).then(() => toast('📤 Link copied for sharing!'));
-      }
-    });
-  });
-
-  const params = new URLSearchParams(window.location.search);
-  if(params.get('post')) setTimeout(() => scrollToPost(params.get('post')), 500);
 }
 
 function scrollToPost(id){
-  const el = document.getElementById('post-'+id);
+  const el=document.getElementById('post-'+id);
   if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
 }
 
-function timeAgo(dateStr){
-  if(!dateStr) return '';
-  const now = new Date();
-  const d = new Date(dateStr);
-  const sec = Math.floor((now - d) / 1000);
-  if(sec < 60) return 'just now';
-  const min = Math.floor(sec / 60);
-  if(min < 60) return min + ' min ago';
-  const hr = Math.floor(min / 60);
-  if(hr < 24) return hr + ' hour' + (hr>1?'s':'') + ' ago';
-  const day = Math.floor(hr / 24);
-  if(day < 30) return day + ' day' + (day>1?'s':'') + ' ago';
-  const mon = Math.floor(day / 30);
-  return mon + ' month' + (mon>1?'s':'') + ' ago';
+// ====== HOME ======
+async function renderHome(cat='all'){
+  const container=document.getElementById('page-home');
+  container.innerHTML='<div class="cat-row"><button class="cat-btn active">All</button><button class="cat-btn">Trending</button><button class="cat-btn">Resources</button><button class="cat-btn">Others</button></div><div class="skel skel-card"></div><div class="skel skel-card"></div>';
+  await loadPosts();
+
+  const cats=container.querySelector('.cat-row');
+  if(cats){
+    cats.querySelectorAll('.cat-btn').forEach(b=>{
+      b.onclick=()=>{
+        cats.querySelectorAll('.cat-btn').forEach(x=>x.classList.remove('active'));
+        b.classList.add('active');
+        renderHome(b.textContent.toLowerCase());
+      };
+    });
+  }
+
+  let filtered=posts;
+  if(cat==='trending') filtered=posts.filter(p=>p.views>2);
+  else if(cat==='resources') filtered=posts.filter(p=>p.title?.toLowerCase().includes('resource'));
+  else if(cat==='others') filtered=posts.filter(p=>!p.title?.toLowerCase().includes('resource'));
+
+  if(!filtered.length){
+    container.innerHTML=(cats?cats.outerHTML:'')+'<div class="empty-state"><div class="e-icon">📂</div><p>No posts yet</p></div>';
+    return;
+  }
+  let html=cats?cats.outerHTML:'';
+  for(const p of filtered){
+    const us = unlockData[p.id] || {remaining: p.unlock_required, done: false};
+    html += postCard(p, us);
+  }
+  container.innerHTML=html;
+  attachEvents();
 }
 
-function postCard(p, alreadyWatched){
-  const t = timeAgo(p.date);
+function postCard(p, us){
+  const r=us.remaining;
+  const done=us.done;
   return `<div class="post-card" id="post-${p.id}">
     <div class="post-photo-wrap">
       <img class="post-photo" src="${API}${p.photo}" alt="" loading="lazy" onerror="this.style.display='none'">
-      <div class="post-badge">✦ Exclusive</div>
-      <div class="post-top-right">
-        <button class="corner-btn share-link" data-post="${p.id}" title="Share">📤</button>
-        <button class="corner-btn copy-link" data-post="${p.id}" title="Copy Link">📋</button>
+      <div class="post-corner">
+        <button class="corner-btn share-post" data-post="${p.id}">📤</button>
+        <button class="corner-btn copy-post" data-post="${p.id}">📋</button>
       </div>
-      <div class="post-overlay"><span class="views-badge">👁 ${p.views||0} • ${t}</span></div>
+      <div class="post-info">
+        <div class="pi-views">👁 ${p.views||0} • ${timeAgo(p.date)}</div>
+        <div class="pi-title">${p.title||'Untitled'}</div>
+      </div>
     </div>
     <div class="post-body">
-      <div class="ad-section">
-        <div class="ad-label">${alreadyWatched ? '✅ AD COMPLETE' : '📢 WATCH AD TO UNLOCK'}</div>
-        <div class="ad-countdown">${alreadyWatched ? '✓' : '15'}</div>
-        <div class="ad-bar-wrap"><div class="ad-bar-fill" style="width:${alreadyWatched ? '100' : '0'}%"></div></div>
-        <div class="ad-text">${alreadyWatched ? '🎉 Unlocked!' : 'Watch 15s ad to unlock'}</div>
-        <div class="ad-sponsored">
-          <span class="sparkle">✦</span> Sponsored Content
-          <span class="sparkle">✦</span>
-        </div>
+      <div class="post-meta">
+        <span class="like-btn" data-post="${p.id}">❤️ ${p.likes||0}</span>
+        <span class="fav-btn" data-post="${p.id}">⭐ ${p.favorites||0}</span>
+        <span>📥 ${p.downloads||0}</span>
       </div>
-      <button class="watch-btn${alreadyWatched ? ' open' : ''}" data-post="${p.id}" data-link="${p.link}" data-unlocked="${alreadyWatched}">
-        ${alreadyWatched ? '▶ Watch Now' : '▶ Watch Ad & Unlock'}
-      </button>
+      <div class="unlock-box">
+        <div class="unlock-label">🔓 Unlock Access (<span class="num">${done?0:r}</span> Left)</div>
+        <button class="unlock-btn${done?' open-now':''}" data-post="${p.id}" data-link="${p.link}" data-done="${done}">
+          ${done?'▶ Open Now':'▶ Unlock'}
+        </button>
+      </div>
+      <div class="unlock-msg" id="umsg-${p.id}">${done?'✅ Unlocked':''}</div>
     </div>
   </div>`;
 }
 
-// ====== ALBUMS ======
-async function renderAlbums(){
-  await loadPosts();
-  const container = document.getElementById('page-albums');
-  if(!posts.length){
-    container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"/></svg><p>No photos yet</p></div>';
-    return;
-  }
-  let html = '<div class="albums-header"><h2>📷 Gallery</h2><p>'+posts.length+' photos</p></div><div class="albums-grid">';
-  for(const p of posts) html += `<img src="${API}${p.photo}" alt="" loading="lazy" onclick="goHome('${p.id}')">`;
-  html += '</div>';
-  container.innerHTML = html;
+function attachEvents(){
+  document.querySelectorAll('.unlock-btn').forEach(btn=>{
+    btn.onclick=async function(e){
+      const pid=this.dataset.post;
+      const link=this.dataset.link;
+      if(this.dataset.done==='true'){window.open(link,'_blank'); return;}
+      if(!tgUser){toast('Open from Telegram'); return;}
+      const res=await api(`/api/unlock_click/${pid}`,{method:'POST',body:JSON.stringify({user_id:tgUser.id})});
+      if(!res) return;
+      unlockData[pid]={remaining:res.remaining, done:res.done};
+      const card=this.closest('.post-card');
+      const label=card.querySelector('.unlock-label .num');
+      const msg=card.querySelector('.unlock-msg');
+      if(res.done){
+        label.textContent='0';
+        this.textContent='▶ Open Now';
+        this.className='unlock-btn open-now';
+        this.dataset.done='true';
+        msg.textContent='✅ Unlocked';
+        toast('🎉 Unlocked!');
+      }else{
+        label.textContent=res.remaining;
+        msg.textContent='✅ Task Complete! '+res.remaining+' More To Go';
+        this.textContent='▶ Unlock';
+        this.style.animation='pulse 0.3s ease';
+        setTimeout(()=>this.style.animation='',300);
+      }
+    };
+  });
+
+  document.querySelectorAll('.copy-post').forEach(btn=>{
+    btn.onclick=function(e){
+      e.stopPropagation();
+      const base=window.location.href.split('?')[0].replace(/\/$/,'');
+      const link=base+'/?post='+this.dataset.post;
+      if(navigator.clipboard){
+        navigator.clipboard.writeText(link).then(()=>toast('📋 Copied!'));
+      }else{toast('📋 '+link);}
+    };
+  });
+
+  document.querySelectorAll('.share-post').forEach(btn=>{
+    btn.onclick=function(e){
+      e.stopPropagation();
+      const base=window.location.href.split('?')[0].replace(/\/$/,'');
+      const link=base+'/?post='+this.dataset.post;
+      if(navigator.share){navigator.share({title:'Media Hub',url:link}).catch(()=>{});}
+      else if(navigator.clipboard){navigator.clipboard.writeText(link).then(()=>toast('📤 Link copied!'));}
+    };
+  });
+
+  document.querySelectorAll('.like-btn').forEach(btn=>{
+    btn.onclick=async function(){
+      if(!tgUser){toast('Open from Telegram'); return;}
+      const res=await api(`/api/like/${this.dataset.post}`,{method:'POST',body:JSON.stringify({user_id:tgUser.id})});
+      if(res) this.textContent='❤️ '+res.likes;
+    };
+  });
+
+  document.querySelectorAll('.fav-btn').forEach(btn=>{
+    btn.onclick=async function(){
+      if(!tgUser){toast('Open from Telegram'); return;}
+      const res=await api(`/api/favorite/${this.dataset.post}`,{method:'POST',body:JSON.stringify({user_id:tgUser.id})});
+      if(res) this.textContent='⭐ '+res.favorites;
+    };
+  });
 }
 
-function goHome(postId){
-  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  document.querySelector('[data-page="home"]').classList.add('active');
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-home').classList.add('active');
-  setTimeout(() => scrollToPost(postId), 300);
+// ====== BROWSER ======
+async function renderBrowser(){
+  const container=document.getElementById('page-browser');
+  await loadPosts();
+  if(!posts.length){
+    container.innerHTML='<div class="empty-state"><div class="e-icon">📁</div><p>No uploads yet</p></div>';
+    return;
+  }
+  let html='<div class="browser-grid">';
+  for(const p of posts){
+    html+=`<div class="b-item" onclick="goHome('${p.id}')">
+      <img src="${API}${p.photo}" alt="" loading="lazy" onerror="this.style.display='none'">
+      <div class="b-overlay">👁 ${p.views||0}</div>
+    </div>`;
+  }
+  html+='</div>';
+  container.innerHTML=html;
+}
+
+function goHome(id){
+  document.querySelector('[data-page="home"]').click();
+  setTimeout(()=>scrollToPost(id),400);
 }
 
 // ====== PROFILE ======
 async function renderProfile(){
-  const container = document.getElementById('page-profile');
+  const container=document.getElementById('page-profile');
   let photo='', name='User', tgid='N/A';
   if(tgUser){
-    name = tgUser.first_name||'';
-    if(tgUser.last_name) name += ' '+tgUser.last_name;
-    tgid = tgUser.id;
-    if(tgUser.photo_url) photo = tgUser.photo_url;
+    name=tgUser.first_name||'';
+    if(tgUser.last_name) name+=' '+tgUser.last_name;
+    tgid=tgUser.id;
+    if(tgUser.photo_url) photo=tgUser.photo_url;
   }
-  const config = await fetchAPI('/api/config') || {};
-  const chanLink = config.channel_link || '';
-  let totalViews=0, totalPosts=posts.length;
-  for(const p of posts) totalViews += p.views||0;
 
-  container.innerHTML = `
+  let userInfo={wallet:0,premium:false,join_date:'',favorites:[]};
+  if(tgUser){
+    const u=await api('/api/user/'+tgUser.id);
+    if(u) userInfo=u;
+  }
+
+  const config=await api('/api/config')||{};
+  let totalViews=0;
+  for(const p of posts) totalViews+=p.views||0;
+
+  container.innerHTML=`
     <div class="profile-header">
-      ${photo ? `<img class="profile-photo" src="${photo}" alt="">` : `<div class="profile-photo" style="background:linear-gradient(135deg,var(--primary),var(--accent));display:inline-flex;align-items:center;justify-content:center;font-size:36px">👤</div>`}
+      ${photo?`<img class="profile-avatar" src="${photo}">`:`<div class="profile-avatar" style="background:linear-gradient(135deg,#6c5ce7,#fd79a8);display:inline-flex;align-items:center;justify-content:center;font-size:32px;color:#fff;border-radius:50%">👤</div>`}
       <div class="profile-name">${name}</div>
       <div class="profile-id">@${tgid}</div>
+      ${userInfo.premium?'<div class="profile-badge">✦ PREMIUM</div>':''}
     </div>
     <div class="profile-section">
-      <h3>📊 Statistics</h3>
-      <div class="stat-row"><span>Total Content</span><span>${totalPosts}</span></div>
-      <div class="stat-row"><span>Total Views</span><span>${totalViews}</span></div>
-      <div class="stat-row"><span>Status</span><span style="color:#00cec9">● Active</span></div>
+      <h3>💰 Wallet</h3>
+      <div class="p-row"><span>Balance</span><span class="val">${userInfo.wallet||0} coins</span></div>
+      <div class="p-row"><span>Joined</span><span>${userInfo.join_date||'Today'}</span></div>
+      <div class="p-row"><span>Status</span><span style="color:${userInfo.premium?'var(--gold)':'var(--text3)'}">${userInfo.premium?'● Premium':'● Free'}</span></div>
+      <div class="redeem-row">
+        <input id="codeInput" placeholder="Enter gift code...">
+        <button onclick="redeemCode()">Redeem</button>
+      </div>
     </div>
     <div class="profile-section">
-      <h3>🔗 Quick Links</h3>
-      ${chanLink ? `<a href="${chanLink}" target="_blank" class="profile-btn channel">📢 Join Our Channel</a>` : ''}
-      <a href="https://t.me/new_ai_v_1_bot" target="_blank" class="profile-btn" style="margin-top:8px">⚙️ Admin Bot</a>
-    </div>`;
+      <h3>📊 Community</h3>
+      <div class="p-row"><span>Total Posts</span><span class="val">${posts.length}</span></div>
+      <div class="p-row"><span>Total Views</span><span class="val">${totalViews}</span></div>
+      <div class="p-row"><span>Favorites</span><span class="val">${userInfo.favorites?.length||0}</span></div>
+    </div>
+    ${config.channel_link?`<div class="profile-section"><a href="${config.channel_link}" target="_blank" class="p-btn gold">📢 Join Channel</a></div>`:''}
+  `;
+}
+
+async function redeemCode(){
+  const code=document.getElementById('codeInput').value.trim();
+  if(!code){toast('Enter a code'); return;}
+  const res=await api('/api/redeem',{method:'POST',body:JSON.stringify({code})});
+  if(res?.ok){
+    toast(res.msg||'🎉 Code redeemed!');
+    renderProfile();
+  }else{
+    toast(res?.msg||'❌ Invalid code');
+  }
+}
+
+// ====== SUPPORT ======
+async function renderSupport(){
+  const container=document.getElementById('page-support');
+  const config=await api('/api/config')||{};
+  container.innerHTML=`
+    <div class="support-grid">
+      <a class="s-card" href="${config.community_link||'https://t.me/'}" target="_blank">
+        <div class="s-icon">💬</div><div class="s-label">Community</div>
+      </a>
+      <a class="s-card" href="${config.updates_link||'https://t.me/'}" target="_blank">
+        <div class="s-icon">📢</div><div class="s-label">Updates</div>
+      </a>
+      <a class="s-card" href="${config.backup_link||'https://t.me/'}" target="_blank">
+        <div class="s-icon">📦</div><div class="s-label">Backup</div>
+      </a>
+      <a class="s-card" href="${config.support_bot||'https://t.me/'}" target="_blank">
+        <div class="s-icon">🤖</div><div class="s-label">Support Bot</div>
+      </a>
+      <a class="s-card" href="${config.how_to_use||'https://t.me/'}" target="_blank" style="grid-column:span 2">
+        <div class="s-icon">📖</div><div class="s-label">How To Use</div>
+      </a>
+    </div>
+  `;
 }
 
 // ====== INIT ======
 (async function init(){
   await loadPosts();
+  for(const p of posts){
+    if(tgUser){
+      const s=await api(`/api/user/${tgUser.id}/status/${p.id}`);
+      if(s) unlockData[p.id]={remaining:s.remaining, done:s.done};
+      else unlockData[p.id]={remaining:p.unlock_required, done:false};
+    }else{
+      unlockData[p.id]={remaining:p.unlock_required, done:false};
+    }
+  }
   renderHome();
-  renderAlbums();
+  renderBrowser();
   renderProfile();
-  const params = new URLSearchParams(window.location.search);
-  if(params.get('post')) setTimeout(() => scrollToPost(params.get('post')), 800);
+  renderSupport();
+  const params=new URLSearchParams(window.location.search);
+  if(params.get('post')) setTimeout(()=>scrollToPost(params.get('post')),800);
 })();
 </script>
 </body>

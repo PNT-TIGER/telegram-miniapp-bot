@@ -145,6 +145,10 @@ body{
           <button id="tabUploadFile" class="tab-btn active" onclick="setUploadMode('file')">📁 File</button>
           <button id="tabUploadUrl" class="tab-btn" onclick="setUploadMode('url')">🔗 Image URL</button>
         </div>
+        <div class="form-group">
+          <label>Post Title</label>
+          <input type="text" id="titleInput" placeholder="Enter post title...">
+        </div>
         <div id="uploadFileGroup" class="form-group">
           <label>Upload Photo</label>
           <input type="file" id="photoInput" accept="image/*">
@@ -156,6 +160,10 @@ body{
         <div class="form-group">
           <label>Video Link (click করলে যা ওপেন হবে)</label>
           <input type="url" id="linkInput" placeholder="https://youtube.com/watch?v=...">
+        </div>
+        <div class="form-group">
+          <label>Unlock Count (কত ক্লিক লাগবে)</label>
+          <input type="number" id="unlockInput" value="4" min="1" max="20">
         </div>
         <button class="upload-btn" id="uploadBtn" onclick="uploadPost()">🚀 Upload Post</button>
       </div>
@@ -248,14 +256,18 @@ function showError(msg){
 }
 
 function uploadPost(){
+  const title = document.getElementById('titleInput').value.trim() || 'Untitled';
   const link = document.getElementById('linkInput').value.trim();
+  const unlockReq = parseInt(document.getElementById('unlockInput').value) || 4;
   if(!link){ showError('Please enter a link'); return; }
 
   const btn = document.getElementById('uploadBtn');
   btn.disabled = true; btn.textContent = '⏳ Uploading...';
 
   const fd = new FormData();
+  fd.append('title', title);
   fd.append('link', link);
+  fd.append('unlock_required', unlockReq);
 
   if(uploadMode === 'file'){
     const file = document.getElementById('photoInput').files[0];
@@ -276,9 +288,11 @@ function uploadPost(){
   .then(d => {
     if(d.ok){
       showSuccess('✅ Post uploaded!');
+      document.getElementById('titleInput').value = '';
       document.getElementById('photoInput').value = '';
       document.getElementById('linkInput').value = '';
       document.getElementById('imageUrlInput').value = '';
+      document.getElementById('unlockInput').value = '4';
       loadPosts();
     } else {
       showError('❌ ' + (d.error || 'Upload failed'));
@@ -302,8 +316,8 @@ function loadPosts(){
       html += `<div class="post-item">
         <img class="post-thumb" src="${API}${p.photo}" alt="" onerror="this.style.display='none'">
         <div class="post-info">
-          <div class="pi-title">${p.link || 'No link'}</div>
-          <div class="pi-meta">👁 ${p.views||0} views • ${p.date||''}</div>
+          <div class="pi-title">${p.title || 'Untitled'}</div>
+          <div class="pi-meta">👁 ${p.views||0} • ${p.date||''} • 🔢 ${p.unlock_required||4}</div>
           <div class="pi-link">${p.id}</div>
         </div>
         <button class="del-btn" onclick="deletePost('${p.id}')" title="Delete">✕</button>
