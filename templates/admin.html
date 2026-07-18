@@ -2,364 +2,442 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Admin - Media Hub</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
 body{
   font-family:'Inter',sans-serif;background:#0a0e1a;color:#fff;
-  min-height:100vh;padding:20px;
+  min-height:100vh;padding-bottom:80px;
 }
-.container{max-width:600px;margin:0 auto}
+:root{
+  --p:#6c5ce7;--pl:#a29bfe;--a:#fd79a8;--g:#fdcb6e;
+  --s:#121829;--s2:#1a2240;--t2:#b0b8d1;--t3:#6c7293;
+}
 
-/* Login */
+/* LOGIN */
 .login-box{
-  background:linear-gradient(135deg,#1a2240,#0f1729);
-  border:1px solid rgba(108,92,231,0.3);border-radius:16px;
-  padding:40px 24px;text-align:center;margin-top:80px;
+  max-width:360px;margin:100px auto;background:linear-gradient(135deg,#1a2240,#0f1729);
+  border:1px solid rgba(108,92,231,0.3);border-radius:16px;padding:40px 24px;text-align:center;
 }
-.login-box h1{font-size:24px;font-weight:800;margin-bottom:6px}
-.login-box p{color:#6c7293;font-size:13px;margin-bottom:20px}
+.login-box h1{font-size:22px;font-weight:800;margin-bottom:4px}
+.login-box p{color:var(--t3);font-size:12px;margin-bottom:18px}
 .login-box input{
-  width:100%;padding:14px 16px;border-radius:10px;
-  background:#121829;border:1px solid rgba(108,92,231,0.3);
-  color:#fff;font-size:15px;outline:none;margin-bottom:12px;
+  width:100%;padding:14px;border-radius:10px;background:var(--s);
+  border:1px solid rgba(108,92,231,0.3);color:#fff;font-size:14px;outline:none;margin-bottom:12px;
 }
-.login-box input:focus{border-color:#6c5ce7}
-.login-btn{
+.login-box input:focus{border-color:var(--p)}
+.login-box button{
   width:100%;padding:14px;border:none;border-radius:10px;
-  background:linear-gradient(135deg,#6c5ce7,#4834d4);
-  color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.3s;
+  background:linear-gradient(135deg,var(--p),#4834d4);color:#fff;font-size:14px;font-weight:700;cursor:pointer;
 }
-.login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(108,92,231,0.4)}
 
-/* Admin Panel */
-.admin-header{
-  display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;
+/* HEADER */
+.top-bar{
+  background:linear-gradient(135deg,#6c5ce7,#4834d4);padding:16px 18px;
+  display:flex;justify-content:space-between;align-items:center;
 }
-.admin-header h1{font-size:22px;font-weight:800}
-.admin-header h1 span{color:#6c5ce7}
-.logout-btn{
-  background:rgba(253,121,168,0.2);color:#fd79a8;border:1px solid rgba(253,121,168,0.3);
-  padding:8px 16px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;
+.top-bar h1{font-size:18px;font-weight:800}
+.top-bar .logout{background:rgba(255,255,255,0.15);border:none;color:#fff;padding:6px 14px;border-radius:8px;font-size:11px;cursor:pointer}
+
+/* SIDEBAR TABS */
+.tab-scroll{display:flex;gap:6px;padding:10px 12px;overflow-x:auto;scrollbar-width:none;background:var(--s)}
+.tab-sbtn{
+  padding:7px 14px;border-radius:8px;border:1px solid rgba(108,92,231,0.2);
+  background:transparent;color:var(--t2);font-size:11px;font-weight:600;cursor:pointer;
+  white-space:nowrap;transition:all 0.2s;flex-shrink:0;
 }
+.tab-sbtn.active{background:rgba(108,92,231,0.25);color:var(--pl);border-color:var(--p)}
+
+.page{display:none;padding:12px 14px}
+.page.active{display:block}
+
+/* CARDS */
 .card{
   background:linear-gradient(135deg,#1a2240,#0f1729);
-  border:1px solid rgba(108,92,231,0.15);border-radius:14px;
-  padding:20px;margin-bottom:16px;
+  border:1px solid rgba(108,92,231,0.12);border-radius:14px;padding:16px;margin-bottom:14px;
 }
-.card h2{font-size:15px;font-weight:700;margin-bottom:14px;color:#b0b8d1;text-transform:uppercase;letter-spacing:0.5px}
+.card h2{font-size:13px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px}
 
-.form-group{margin-bottom:14px}
-.form-group label{display:block;font-size:12px;color:#6c7293;margin-bottom:5px;font-weight:600}
-.form-group input,.form-group textarea{
-  width:100%;padding:12px 14px;border-radius:10px;
-  background:#121829;border:1px solid rgba(108,92,231,0.2);
-  color:#fff;font-size:14px;outline:none;
+/* STATS GRID */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-box{
+  background:var(--s);border:1px solid rgba(108,92,231,0.1);border-radius:10px;padding:12px;text-align:center;
 }
-.form-group input:focus,.form-group textarea:focus{border-color:#6c5ce7}
-.form-group input[type=file]{padding:10px}
-.form-group textarea{resize:vertical;min-height:50px;font-family:inherit}
+.stat-box .num{font-size:20px;font-weight:800;background:linear-gradient(135deg,var(--p),var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-box .lbl{font-size:10px;color:var(--t3);margin-top:2px}
 
-.upload-btn{
-  width:100%;padding:14px;border:none;border-radius:10px;
-  background:linear-gradient(135deg,#6c5ce7,#4834d4);
-  color:#fff;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.3s;
+/* FORM */
+.fg{margin-bottom:10px}
+.fg label{display:block;font-size:11px;color:var(--t3);margin-bottom:3px;font-weight:600}
+.fg input,.fg select,.fg textarea{
+  width:100%;padding:10px 12px;border-radius:8px;background:var(--s);
+  border:1px solid rgba(108,92,231,0.2);color:#fff;font-size:13px;outline:none;
 }
-.upload-btn:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(108,92,231,0.4)}
-.upload-btn:disabled{opacity:0.5;cursor:not-allowed}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--p)}
+.fg textarea{resize:vertical;min-height:50px;font-family:inherit}
+.fg select option{background:var(--s);color:#fff}
 
-/* Posts List */
+/* BUTTONS */
+.btn{
+  width:100%;padding:11px;border:none;border-radius:8px;
+  font-size:13px;font-weight:700;cursor:pointer;transition:all 0.3s;
+}
+.btn-p{background:linear-gradient(135deg,var(--p),#4834d4);color:#fff}
+.btn-g{background:linear-gradient(135deg,var(--g),#e17055);color:#000}
+.btn-r{background:rgba(253,121,168,0.2);color:var(--a);border:1px solid rgba(253,121,168,0.3)}
+.btn:active{transform:scale(0.97)}
+
+/* POST LIST */
 .post-item{
-  display:flex;gap:12px;padding:12px 0;border-bottom:1px solid rgba(108,92,231,0.1);
-  align-items:center;
+  display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(108,92,231,0.08);align-items:center;
 }
 .post-item:last-child{border-bottom:none}
-.post-thumb{
-  width:60px;height:40px;border-radius:6px;object-fit:cover;background:#121829;flex-shrink:0;
+.p-thumb{width:50px;height:35px;border-radius:6px;object-fit:cover;background:var(--s);flex-shrink:0}
+.p-info{flex:1;min-width:0}
+.p-info .p-title{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.p-info .p-meta{font-size:10px;color:var(--t3)}
+.p-actions{display:flex;gap:4px}
+.p-actions button{
+  width:28px;height:28px;border-radius:6px;border:none;font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
 }
-.post-info{flex:1;min-width:0}
-.post-info .pi-title{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.post-info .pi-meta{font-size:11px;color:#6c7293;margin-top:2px}
-.post-info .pi-link{font-size:11px;color:#a29bfe;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.del-btn{
-  background:rgba(253,121,168,0.15);color:#fd79a8;border:none;
-  width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  transition:all 0.3s;
-}
-.del-btn:hover{background:rgba(253,121,168,0.3)}
+.p-edit{background:rgba(108,92,231,0.2);color:var(--pl)}
+.p-del{background:rgba(253,121,168,0.2);color:var(--a)}
 
-.empty-msg{text-align:center;padding:30px;color:#6c7293;font-size:13px}
-.success-msg{
-  padding:10px 14px;background:rgba(0,206,201,0.15);color:#00cec9;
-  border-radius:8px;font-size:13px;font-weight:600;margin-bottom:12px;display:none;
+/* GIFT CODE */
+.gift-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid rgba(108,92,231,0.08);
 }
-.error-msg{
-  padding:10px 14px;background:rgba(253,121,168,0.15);color:#fd79a8;
-  border-radius:8px;font-size:13px;font-weight:600;margin-bottom:12px;display:none;
+.gift-code{font-size:13px;font-weight:700;color:var(--g);font-family:monospace}
+.gift-meta{font-size:10px;color:var(--t3)}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  background:rgba(18,24,41,0.95);backdrop-filter:blur(20px);
+  color:#fff;padding:10px 20px;border-radius:10px;font-size:12px;font-weight:600;
+  z-index:200;display:none;border:1px solid rgba(108,92,231,0.3);
 }
-.tab-bar{display:flex;gap:8px;margin-bottom:16px}
-.tab-btn{
-  padding:8px 18px;border-radius:8px;border:1px solid rgba(108,92,231,0.2);
-  background:transparent;color:#6c7293;font-size:12px;font-weight:600;cursor:pointer;
-}
-.tab-btn.active{background:rgba(108,92,231,0.2);color:#a29bfe;border-color:#6c5ce7}
-.tab-content{display:none}
-.tab-content.active{display:block}
+
+@media(min-width:480px){body{max-width:480px;margin:0 auto}}
 </style>
 </head>
 <body>
-<div class="container" id="app">
-  <!-- Login -->
-  <div id="loginBox" class="login-box">
+
+<div id="loginPage">
+  <div class="login-box">
     <h1>🔐 Admin Panel</h1>
-    <p>Enter password to access the admin panel</p>
-    <input type="password" id="passInput" placeholder="Enter password..." onkeydown="if(event.key==='Enter')login()">
-    <button class="login-btn" onclick="login()">Login</button>
-    <div id="loginError" style="color:#fd79a8;font-size:13px;margin-top:10px;display:none">Wrong password!</div>
-  </div>
-
-  <!-- Admin Panel -->
-  <div id="adminPanel" style="display:none">
-    <div class="admin-header">
-      <h1><span>✦</span> Admin</h1>
-      <button class="logout-btn" onclick="logout()">Logout</button>
-    </div>
-
-    <div id="successMsg" class="success-msg"></div>
-    <div id="errorMsg" class="error-msg"></div>
-
-    <div class="tab-bar">
-      <button class="tab-btn active" data-tab="upload" onclick="switchTab('upload')">📤 Upload</button>
-      <button class="tab-btn" data-tab="posts" onclick="switchTab('posts')">📋 Posts</button>
-      <button class="tab-btn" data-tab="settings" onclick="switchTab('settings')">⚙️ Settings</button>
-    </div>
-
-    <!-- Upload Tab -->
-    <div id="tab-upload" class="tab-content active">
-      <div class="card">
-        <h2>📤 Upload New Post</h2>
-        <div style="display:flex;gap:8px;margin-bottom:14px">
-          <button id="tabUploadFile" class="tab-btn active" onclick="setUploadMode('file')">📁 File</button>
-          <button id="tabUploadUrl" class="tab-btn" onclick="setUploadMode('url')">🔗 Image URL</button>
-        </div>
-        <div class="form-group">
-          <label>Post Title</label>
-          <input type="text" id="titleInput" placeholder="Enter post title...">
-        </div>
-        <div id="uploadFileGroup" class="form-group">
-          <label>Upload Photo</label>
-          <input type="file" id="photoInput" accept="image/*">
-        </div>
-        <div id="uploadUrlGroup" class="form-group" style="display:none">
-          <label>Image URL</label>
-          <input type="url" id="imageUrlInput" placeholder="https://example.com/photo.jpg">
-        </div>
-        <div class="form-group">
-          <label>Video Link (click করলে যা ওপেন হবে)</label>
-          <input type="url" id="linkInput" placeholder="https://youtube.com/watch?v=...">
-        </div>
-        <div class="form-group">
-          <label>Unlock Count (কত ক্লিক লাগবে)</label>
-          <input type="number" id="unlockInput" value="4" min="1" max="20">
-        </div>
-        <button class="upload-btn" id="uploadBtn" onclick="uploadPost()">🚀 Upload Post</button>
-      </div>
-    </div>
-
-    <!-- Posts Tab -->
-    <div id="tab-posts" class="tab-content">
-      <div class="card">
-        <h2>📋 All Posts</h2>
-        <div id="postsList"></div>
-      </div>
-    </div>
-
-    <!-- Settings Tab -->
-    <div id="tab-settings" class="tab-content">
-      <div class="card">
-        <h2>⚙️ Settings</h2>
-        <div class="form-group">
-          <label>Channel Link</label>
-          <input type="url" id="channelInput" placeholder="https://t.me/yourchannel">
-        </div>
-        <button class="upload-btn" onclick="saveSettings()">💾 Save</button>
-      </div>
-    </div>
+    <p>Media Hub Administration</p>
+    <input type="password" id="pwdInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')login()">
+    <button onclick="login()">Login</button>
+    <div id="loginErr" style="color:var(--a);font-size:12px;margin-top:8px;display:none">Wrong password</div>
   </div>
 </div>
+
+<div id="app" style="display:none">
+  <div class="top-bar">
+    <h1>✦ Admin</h1>
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
+  <div class="tab-scroll" id="tabBar"></div>
+  <div id="pageContent"></div>
+</div>
+
+<div id="toast" class="toast"></div>
 
 <script>
 const API = "https://c608d31e3c7c6fe9-103-126-20-86.serveousercontent.com";
 let token = '';
+let currentTab = 'dashboard';
+
+const TABS = [
+  {id:'dashboard', label:'📊 Dashboard'},
+  {id:'upload', label:'📤 Upload Post'},
+  {id:'posts', label:'📋 Posts'},
+  {id:'giftcodes', label:'🎁 Gift Codes'},
+  {id:'users', label:'👥 Users'},
+  {id:'settings', label:'⚙️ Settings'},
+];
+
+function toast(m){
+  const e=document.getElementById('toast');
+  e.textContent=m; e.style.display='block';
+  setTimeout(()=>e.style.display='none',2500);
+}
+
+function adminApi(path, opts={}){
+  return fetch(API+path, {
+    headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json',...opts.headers},
+    ...opts
+  }).then(r=>r.json());
+}
 
 function login(){
-  const pwd = document.getElementById('passInput').value;
-  fetch(API + '/api/admin/check', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({password: pwd})
-  })
-  .then(r => r.json())
-  .then(d => {
+  const pwd=document.getElementById('pwdInput').value;
+  fetch(API+'/api/admin/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pwd})})
+  .then(r=>r.json()).then(d=>{
     if(d.ok){
-      token = 'Bearer ' + pwd;
-      document.getElementById('loginBox').style.display = 'none';
-      document.getElementById('adminPanel').style.display = 'block';
-      document.getElementById('loginError').style.display = 'none';
-      loadPosts();
-      loadConfig();
-    } else {
-      document.getElementById('loginError').style.display = 'block';
+      token=pwd;
+      document.getElementById('loginPage').style.display='none';
+      document.getElementById('app').style.display='block';
+      initApp();
+    }else{
+      document.getElementById('loginErr').style.display='block';
     }
   });
 }
 
 function logout(){
-  token = '';
-  document.getElementById('loginBox').style.display = 'block';
-  document.getElementById('adminPanel').style.display = 'none';
-  document.getElementById('passInput').value = '';
+  token=''; document.getElementById('app').style.display='none';
+  document.getElementById('loginPage').style.display='block';
+  document.getElementById('pwdInput').value='';
 }
 
-function switchTab(name){
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector(`.tab-btn[data-tab="${name}"]`).classList.add('active');
-  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  if(name === 'posts') loadPosts();
-  if(name === 'settings') loadConfig();
+function initApp(){
+  renderTabs();
+  switchTab('dashboard');
 }
 
-let uploadMode = 'file';
-
-function setUploadMode(mode){
-  uploadMode = mode;
-  document.getElementById('tabUploadFile').classList.toggle('active', mode === 'file');
-  document.getElementById('tabUploadUrl').classList.toggle('active', mode === 'url');
-  document.getElementById('uploadFileGroup').style.display = mode === 'file' ? 'block' : 'none';
-  document.getElementById('uploadUrlGroup').style.display = mode === 'url' ? 'block' : 'none';
+function renderTabs(){
+  const bar=document.getElementById('tabBar');
+  bar.innerHTML=TABS.map(t=>`<button class="tab-sbtn${t.id==='dashboard'?' active':''}" onclick="switchTab('${t.id}')">${t.label}</button>`).join('');
 }
 
-function showSuccess(msg){
-  const el = document.getElementById('successMsg');
-  el.textContent = msg; el.style.display = 'block';
-  setTimeout(() => el.style.display = 'none', 3000);
+function switchTab(id){
+  currentTab=id;
+  document.querySelectorAll('.tab-sbtn').forEach(b=>b.classList.toggle('active',b.textContent.includes(TABS.find(t=>t.id===id)?.label||'')));
+  const pages={dashboard:renderDashboard,upload:renderUpload,posts:renderPosts,giftcodes:renderGiftCodes,users:renderUsers,settings:renderSettings};
+  (pages[id]||renderDashboard)();
 }
 
-function showError(msg){
-  const el = document.getElementById('errorMsg');
-  el.textContent = msg; el.style.display = 'block';
-  setTimeout(() => el.style.display = 'none', 3000);
+// === DASHBOARD ===
+async function renderDashboard(){
+  const el=document.getElementById('pageContent');
+  const stats=await adminApi('/api/admin/stats')||{};
+  const config=await adminApi('/api/config')||{};
+  el.innerHTML=`
+    <div class="stats-grid">
+      <div class="stat-box"><div class="num">${stats.posts||0}</div><div class="lbl">Posts</div></div>
+      <div class="stat-box"><div class="num">${stats.users||0}</div><div class="lbl">Users</div></div>
+      <div class="stat-box"><div class="num">${stats.views||0}</div><div class="lbl">Views</div></div>
+      <div class="stat-box"><div class="num">${stats.downloads||0}</div><div class="lbl">Downloads</div></div>
+      <div class="stat-box"><div class="num">${stats.premium_users||0}</div><div class="lbl">Premium</div></div>
+      <div class="stat-box"><div class="num">${stats.likes||0}</div><div class="lbl">Likes</div></div>
+    </div>
+    <div class="card">
+      <h2>📢 Quick Actions</h2>
+      <button class="btn btn-p" style="margin-bottom:6px" onclick="switchTab('upload')">📤 New Post</button>
+      <button class="btn btn-g" onclick="switchTab('giftcodes')">🎁 Create Gift Code</button>
+    </div>
+    ${config.channel_link?`<div class="card"><h2>🔗 Channel</h2><p style="font-size:12px;color:var(--t2)">${config.channel_link}</p></div>`:''}
+  `;
 }
 
-function uploadPost(){
-  const title = document.getElementById('titleInput').value.trim() || 'Untitled';
-  const link = document.getElementById('linkInput').value.trim();
-  const unlockReq = parseInt(document.getElementById('unlockInput').value) || 4;
-  if(!link){ showError('Please enter a link'); return; }
+// === UPLOAD POST ===
+function renderUpload(){
+  const el=document.getElementById('pageContent');
+  el.innerHTML=`
+    <div class="card">
+      <h2>📤 New Post</h2>
+      <div class="fg"><label>Title</label><input id="upTitle" placeholder="Post title"></div>
+      <div class="fg"><label>Description</label><textarea id="upDesc" rows="2"></textarea></div>
+      <div class="fg"><label>Category</label>
+        <select id="upCat">
+          <option value="trending">Trending</option>
+          <option value="resources">Resources</option>
+          <option value="others" selected>Others</option>
+        </select>
+      </div>
+      <div class="fg"><label>Tags (comma separated)</label><input id="upTags" placeholder="tag1, tag2"></div>
+      <div class="fg"><label>File Type</label>
+        <select id="upFileType">
+          <option value="link">Link</option>
+          <option value="video">Video</option>
+          <option value="image">Image</option>
+          <option value="apk">APK</option>
+          <option value="zip">ZIP</option>
+          <option value="pdf">PDF</option>
+        </select>
+      </div>
+      <div class="fg"><label>Upload Thumbnail</label><input type="file" id="upFile" accept="image/*"></div>
+      <div class="fg"><label>Or Image URL</label><input id="upImgUrl" placeholder="https://..."></div>
+      <div class="fg"><label>Final Open Link (after unlock)</label><input id="upLink" placeholder="https://..."></div>
+      <div class="fg"><label>Unlock Count</label><input type="number" id="upUnlock" value="4" min="1" max="20"></div>
+      <button class="btn btn-p" onclick="submitPost()">🚀 Publish</button>
+    </div>
+  `;
+}
 
-  const btn = document.getElementById('uploadBtn');
-  btn.disabled = true; btn.textContent = '⏳ Uploading...';
+async function submitPost(){
+  const title=document.getElementById('upTitle').value.trim()||'Untitled';
+  const desc=document.getElementById('upDesc').value.trim();
+  const cat=document.getElementById('upCat').value;
+  const tags=document.getElementById('upTags').value.trim();
+  const fileType=document.getElementById('upFileType').value;
+  const link=document.getElementById('upLink').value.trim();
+  const unlock=parseInt(document.getElementById('upUnlock').value)||4;
+  const file=document.getElementById('upFile').files[0];
+  const imgUrl=document.getElementById('upImgUrl').value.trim();
 
-  const fd = new FormData();
-  fd.append('title', title);
-  fd.append('link', link);
-  fd.append('unlock_required', unlockReq);
+  if(!link){toast('❌ Link required'); return;}
 
-  if(uploadMode === 'file'){
-    const file = document.getElementById('photoInput').files[0];
-    if(!file){ showError('Please select a photo'); btn.disabled = false; btn.textContent = '🚀 Upload Post'; return; }
-    fd.append('photo', file);
-  } else {
-    const url = document.getElementById('imageUrlInput').value.trim();
-    if(!url){ showError('Please enter an image URL'); btn.disabled = false; btn.textContent = '🚀 Upload Post'; return; }
-    fd.append('image_url', url);
-  }
+  const fd=new FormData();
+  fd.append('title',title); fd.append('description',desc);
+  fd.append('category',cat); fd.append('tags',tags);
+  fd.append('file_type',fileType); fd.append('link',link);
+  fd.append('unlock_required',unlock);
+  if(file) fd.append('file',file);
+  if(imgUrl&&!file) fd.append('image_url',imgUrl);
 
-  fetch(API + '/api/admin/upload', {
-    method: 'POST',
-    headers: {'Authorization': token},
-    body: fd
-  })
-  .then(r => r.json())
-  .then(d => {
+  try{
+    const r=await fetch(API+'/api/admin/post',{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd});
+    const d=await r.json();
     if(d.ok){
-      showSuccess('✅ Post uploaded!');
-      document.getElementById('titleInput').value = '';
-      document.getElementById('photoInput').value = '';
-      document.getElementById('linkInput').value = '';
-      document.getElementById('imageUrlInput').value = '';
-      document.getElementById('unlockInput').value = '4';
-      loadPosts();
-    } else {
-      showError('❌ ' + (d.error || 'Upload failed'));
-    }
-  })
-  .catch(() => showError('❌ Network error'))
-  .finally(() => { btn.disabled = false; btn.textContent = '🚀 Upload Post'; });
+      toast('✅ Post published! ID: '+d.id);
+      renderPosts();
+    }else toast('❌ '+(d.error||'Failed'));
+  }catch(e){toast('❌ Error');}
 }
 
-function loadPosts(){
-  const container = document.getElementById('postsList');
-  fetch(API + '/api/posts')
-  .then(r => r.json())
-  .then(posts => {
-    if(!posts.length){
-      container.innerHTML = '<div class="empty-msg">No posts yet</div>';
-      return;
-    }
-    let html = '';
-    posts.forEach(p => {
-      html += `<div class="post-item">
-        <img class="post-thumb" src="${API}${p.photo}" alt="" onerror="this.style.display='none'">
-        <div class="post-info">
-          <div class="pi-title">${p.title || 'Untitled'}</div>
-          <div class="pi-meta">👁 ${p.views||0} • ${p.date||''} • 🔢 ${p.unlock_required||4}</div>
-          <div class="pi-link">${p.id}</div>
-        </div>
-        <button class="del-btn" onclick="deletePost('${p.id}')" title="Delete">✕</button>
-      </div>`;
-    });
-    container.innerHTML = html;
+// === POSTS ===
+async function renderPosts(){
+  const el=document.getElementById('pageContent');
+  const posts=await adminApi('/api/posts')||[];
+  let html='<div class="card"><h2>📋 All Posts ('+posts.length+')</h2>';
+  if(!posts.length){html+='<p style="color:var(--t3);font-size:13px">No posts</p></div>'; el.innerHTML=html; return;}
+  posts.forEach(p=>{
+    const base=window.location.origin;
+    html+=`<div class="post-item">
+      <img class="p-thumb" src="${API}${p.photo}" onerror="this.style.display='none'">
+      <div class="p-info">
+        <div class="p-title">${p.title||'Untitled'}</div>
+        <div class="p-meta">👁${p.views} 📥${p.downloads} ❤️${p.likes} ⭐${p.favorites} 🔢${p.unlock_required}</div>
+        <div class="p-meta" style="font-size:9px;color:var(--p)">${p.id}</div>
+      </div>
+      <div class="p-actions">
+        <button class="p-edit" onclick="copyDeepLink('${p.id}')">🔗</button>
+        <button class="p-del" onclick="deletePost('${p.id}')">✕</button>
+      </div>
+    </div>`;
   });
+  html+='</div>';
+  el.innerHTML=html;
 }
 
-function deletePost(id){
+function copyDeepLink(id){
+  const link=window.location.origin+'/?post='+id;
+  if(navigator.clipboard){navigator.clipboard.writeText(link).then(()=>toast('🔗 Deep link copied!'));}
+  else toast('🔗 '+link);
+}
+
+async function deletePost(id){
   if(!confirm('Delete this post?')) return;
-  fetch(API + '/api/admin/post/' + id, {
-    method: 'DELETE',
-    headers: {'Authorization': token}
-  })
-  .then(r => r.json())
-  .then(d => {
-    if(d.ok){ showSuccess('✅ Post deleted!'); loadPosts(); }
-    else { showError('❌ Delete failed'); }
-  });
+  const d=await adminApi('/api/admin/post/'+id,{method:'DELETE'});
+  if(d.ok){toast('✅ Deleted'); renderPosts();}
+  else toast('❌ Failed');
 }
 
-function loadConfig(){
-  fetch(API + '/api/config')
-  .then(r => r.json())
-  .then(cfg => {
-    document.getElementById('channelInput').value = cfg.channel_link || '';
-  });
+// === GIFT CODES ===
+function renderGiftCodes(){
+  const el=document.getElementById('pageContent');
+  el.innerHTML=`
+    <div class="card">
+      <h2>🎁 Create Gift Code</h2>
+      <div class="fg"><label>Code (leave empty for random)</label><input id="gcCode" placeholder="VIP2025"></div>
+      <div class="fg"><label>Coin Amount</label><input type="number" id="gcAmount" value="100"></div>
+      <div class="fg"><label>Max Uses</label><input type="number" id="gcMax" value="10"></div>
+      <div class="fg"><label>Expire Date</label><input id="gcExpire" placeholder="2025-12-31"></div>
+      <button class="btn btn-g" onclick="createGiftCode()">🎁 Generate Code</button>
+    </div>
+    <div class="card" id="gcList"><h2>📜 Existing Codes</h2><p style="color:var(--t3);font-size:13px">Loading...</p></div>
+  `;
+  loadGiftCodes();
 }
 
-function saveSettings(){
-  const channel = document.getElementById('channelInput').value.trim();
-  fetch(API + '/api/admin/config', {
-    method: 'POST',
-    headers: {'Authorization': token, 'Content-Type': 'application/json'},
-    body: JSON.stringify({channel_link: channel})
-  })
-  .then(r => r.json())
-  .then(d => {
-    if(d.ok) showSuccess('✅ Settings saved!');
-    else showError('❌ Save failed');
+async function loadGiftCodes(){
+  const codes=await adminApi('/api/admin/gift_codes')||[];
+  const el=document.getElementById('gcList');
+  if(!codes.length){el.innerHTML='<h2>📜 Codes</h2><p style="color:var(--t3);font-size:13px">No codes yet</p>'; return;}
+  let html='<h2>📜 Codes ('+codes.length+')</h2>';
+  codes.forEach(g=>{
+    html+=`<div class="gift-item">
+      <div><div class="gift-code">${g.code}</div><div class="gift-meta">Uses: ${g.uses||0}/${g.max_uses} • ${g.expire||'No expiry'}</div></div>
+      <button class="p-del" onclick="deleteGiftCode('${g.code}')" style="width:auto;padding:4px 10px;border-radius:6px">✕</button>
+    </div>`;
   });
+  el.innerHTML=html;
+}
+
+async function createGiftCode(){
+  const code=document.getElementById('gcCode').value.trim().toUpperCase()||'';
+  const amount=parseInt(document.getElementById('gcAmount').value)||100;
+  const max=parseInt(document.getElementById('gcMax').value)||10;
+  const expire=document.getElementById('gcExpire').value.trim();
+  const d=await adminApi('/api/admin/gift_codes',{
+    method:'POST',body:JSON.stringify({code:code||undefined,permission_count:amount,max_uses:max,expire:expire,allowed_posts:[]})
+  });
+  if(d.ok){toast('✅ Code created!'); document.getElementById('gcCode').value=''; loadGiftCodes();}
+  else toast('❌ Failed');
+}
+
+async function deleteGiftCode(code){
+  const d=await adminApi('/api/admin/gift_code/'+code,{method:'DELETE'});
+  if(d.ok){toast('✅ Deleted'); loadGiftCodes();}
+}
+
+// === USERS ===
+async function renderUsers(){
+  const el=document.getElementById('pageContent');
+  const users=await adminApi('/api/admin/users')||{};
+  const cnt=Object.keys(users).length;
+  let html=`<div class="card"><h2>👥 All Users (${cnt})</h2>`;
+  if(!cnt){html+='<p style="color:var(--t3);font-size:13px">No users yet</p></div>'; el.innerHTML=html; return;}
+  Object.entries(users).forEach(([uid,u])=>{
+    html+=`<div class="post-item">
+      <div class="p-info">
+        <div class="p-title">User: ${uid}</div>
+        <div class="p-meta">💰 ${u.wallet||0} • ${u.premium?'⭐ Premium':'○ Free'} • ${u.join_date||''}</div>
+      </div>
+    </div>`;
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+
+// === SETTINGS ===
+async function renderSettings(){
+  const config=await adminApi('/api/config')||{};
+  const el=document.getElementById('pageContent');
+  el.innerHTML=`
+    <div class="card">
+      <h2>🔗 Support Links</h2>
+      <div class="fg"><label>Community Group</label><input id="sCommunity" value="${config.community_link||''}"></div>
+      <div class="fg"><label>Telegram Channel</label><input id="sChannel" value="${config.channel_link||''}"></div>
+      <div class="fg"><label>Backup Channel</label><input id="sBackup" value="${config.backup_link||''}"></div>
+      <div class="fg"><label>Support Bot</label><input id="sSupport" value="${config.support_bot||''}"></div>
+      <div class="fg"><label>How To Use Link</label><input id="sHow" value="${config.how_to_use||''}"></div>
+      <div class="fg"><label>Updates Link</label><input id="sUpdates" value="${config.updates_link||''}"></div>
+      <button class="btn btn-p" onclick="saveSettings()">💾 Save Settings</button>
+    </div>
+  `;
+}
+
+async function saveSettings(){
+  const body={
+    community_link: document.getElementById('sCommunity').value.trim(),
+    channel_link: document.getElementById('sChannel').value.trim(),
+    backup_link: document.getElementById('sBackup').value.trim(),
+    support_bot: document.getElementById('sSupport').value.trim(),
+    how_to_use: document.getElementById('sHow').value.trim(),
+    updates_link: document.getElementById('sUpdates').value.trim(),
+  };
+  const d=await adminApi('/api/admin/config',{method:'POST',body:JSON.stringify(body)});
+  if(d.ok) toast('✅ Settings saved!');
+  else toast('❌ Failed');
 }
 </script>
 </body>
